@@ -201,7 +201,7 @@ void SetNextWeather(u8 weather)
         #if DYNAMIC_OW_PALS
             u32 fogPalettes = 0x7FFF0000;   // all but last sprite palette
             u16 fogIdx = IndexOfSpritePaletteTag(PALTAG_WEATHER);
-            if (fogIdx != 0xFF) {
+            if (fogIdx < 15) {
                 fogPalettes &= ~(1 << fogIdx); // remove fog sprites from blend bits
             }
             if (gWeatherPtr->nextWeather == WEATHER_FOG_HORIZONTAL)
