@@ -327,8 +327,8 @@ static void BuildNormalStartMenu(void)
     AddStartMenuAction(MENU_ACTION_OPTION);
     AddStartMenuAction(MENU_ACTION_EXIT);
                 /*RTC START MENU*/
-//    PrintRTCWindow();//aqui cargamos la ventana ya que esta funcion se ejecuta una vez al abrir el menu*/
-    PrintRTCtime();
+    PrintRTCWindow();//aqui cargamos la ventana ya que esta funcion se ejecuta una vez al abrir el menu*/
+//    PrintRTCtime();
 }
 
 static void BuildDebugStartMenu(void)
@@ -1481,22 +1481,20 @@ static u8 second;
 
 static void PrintRTCWindow(void) // Función que carga una ventana auxiliar en el menú de pausa.
 {      
-    sSafariBallsWindowId = AddWindow(&sStartMenuRtcWindowTemplate);
+    sSafariBallsWindowId = AddWindow(&sStartMenuWindowTemplate);
     PutWindowTilemap(sSafariBallsWindowId);
-    FillWindowPixelBuffer(sSafariBallsWindowId, PIXEL_FILL(1));                                 
+    FormatDecimalRtcTimeDisplay(gStringVar4);  // al estar los segundos en un gStringVar fuerza a actualizar FormatDecimalRtcTime                                    
+    AddTextPrinterParameterized(sSafariBallsWindowId, 1, gStringVar4, 0, 1, 0xFF, NULL); 
     CopyWindowToVram(sSafariBallsWindowId, 2);
 }
 
 static void  PrintRTCtime(void)  // Funcion que carga y actualiza el tiempo constantemente.
 {
-        sSafariBallsWindowId = AddWindow(&sStartMenuRtcWindowTemplate);
-        PutWindowTilemap(sSafariBallsWindowId);
-    if(second != Rtc_GetCurrentSecond())
+/*    if(second != Rtc_GetCurrentSecond())
     {
         second = Rtc_GetCurrentSecond();
         FillWindowPixelBuffer(sSafariBallsWindowId, PIXEL_FILL(0)); 
         FormatDecimalRtcTimeDisplay(gStringVar4);  // al estar los segundos en un gStringVar fuerza a actualizar FormatDecimalRtcTime
-    }
-        AddTextPrinterParameterized(sSafariBallsWindowId, 1, gStringVar4, 0, 0, 0x10, NULL);
         CopyWindowToVram(sSafariBallsWindowId, 2);
+        } */
 }
