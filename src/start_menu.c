@@ -1481,7 +1481,7 @@ static u8 second;
 
 static void PrintRTCWindow(void) // Función que carga una ventana auxiliar en el menú de pausa.
 {      
-    sSafariBallsWindowId = AddWindow(&sStartMenuWindowRtcTemplate);
+    sSafariBallsWindowId = AddWindow(&sStartMenuRtcWindowTemplate);
     PutWindowTilemap(sSafariBallsWindowId);
     FillWindowPixelBuffer(sSafariBallsWindowId, PIXEL_FILL(0)); 
     FormatDecimalRtcTimeDisplay(gStringVar4);  // al estar los segundos en un gStringVar fuerza a actualizar FormatDecimalRtcTime                                    
