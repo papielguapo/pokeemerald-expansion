@@ -601,12 +601,12 @@ void ShowStartMenu(void)
         PlayerFreeze();
         StopPlayerAvatar();
     }
+    PrintRTCtime();
     CreateStartMenuTask(Task_ShowStartMenu);
     LockPlayerFieldControls();
   }
 static bool8 HandleStartMenuInput(void)
 {
-    PrintRTCWindow();
     if (JOY_NEW(DPAD_UP))
     {
         PlaySE(SE_SELECT);
@@ -1476,7 +1476,7 @@ void AppendToList(u8 *list, u8 *pos, u8 newEntry)
 }
 
   //HOEENWALKER IMPLEMENTACION Rtc_GetCurrentSecond()
-
+static u8 second;
 static void PrintRTCWindow(void) // Función que carga una ventana auxiliar en el menú de pausa.
 {      
     sSafariBallsWindowId = AddWindow(&sStartMenuRtcWindowTemplate);
@@ -1486,7 +1486,7 @@ static void PrintRTCWindow(void) // Función que carga una ventana auxiliar en e
     AddTextPrinterParameterized(sSafariBallsWindowId, 1, gStringVar4, 0, 1, 0xFF, NULL); 
     CopyWindowToVram(sSafariBallsWindowId, 2);
 }
-static u8 second;
+
 static void  PrintRTCtime(void)  // Funcion que carga y actualiza el tiempo constantemente.
 {
     if(second != Rtc_GetCurrentSecond())
