@@ -252,6 +252,7 @@ static void RemoveSaveInfoWindow(void);
 static void HideStartMenuWindow(void);
 static void HideStartMenuDebug(void);
 static void PrintRTCWindow(void);/* AÑADE RTC START MENU al final de local functions*/
+static void  PrintRTCtime(void);
 
 void SetDexPokemonPokenavFlags(void) // unused
 {
