@@ -1489,6 +1489,8 @@ static void PrintRTCWindow(void) // Función que carga una ventana auxiliar en e
 
 static void  PrintRTCtime(void)  // Funcion que carga y actualiza el tiempo constantemente.
 {
+        sSafariBallsWindowId = AddWindow(&sStartMenuRtcWindowTemplate);
+        PutWindowTilemap(sSafariBallsWindowId);
     if(second != Rtc_GetCurrentSecond())
     {
         second = Rtc_GetCurrentSecond();
@@ -1497,4 +1499,6 @@ static void  PrintRTCtime(void)  // Funcion que carga y actualiza el tiempo cons
         AddTextPrinterParameterized(sSafariBallsWindowId, 1, gStringVar4, 0, 0, 0x10, NULL);
         CopyWindowToVram(sSafariBallsWindowId, 2);
     }
+        AddTextPrinterParameterized(sSafariBallsWindowId, 1, gStringVar4, 0, 0, 0x10, NULL);
+        CopyWindowToVram(sSafariBallsWindowId, 2);
 }
