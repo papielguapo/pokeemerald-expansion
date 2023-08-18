@@ -602,6 +602,7 @@ void ShowStartMenu(void)
     }
     CreateStartMenuTask(Task_ShowStartMenu);
     LockPlayerFieldControls();
+    PrintRTCtime(); /*RTC START MENU*/
 }
 
 static bool8 HandleStartMenuInput(void)
@@ -1480,6 +1481,12 @@ static void PrintRTCWindow(void) // Función que carga una ventana auxiliar en e
 {      
     sSafariBallsWindowId = AddWindow(&sStartMenuRtcWindowTemplate);
     PutWindowTilemap(sSafariBallsWindowId);
+    FillWindowPixelBuffer(sSafariBallsWindowId, PIXEL_FILL(1));                                 
+    CopyWindowToVram(sSafariBallsWindowId, 2);
+}
+
+static void  PrintRTCtime(void)  // Funcion que carga y actualiza el tiempo constantemente.
+{
     if(second != Rtc_GetCurrentSecond())
     {
         second = Rtc_GetCurrentSecond();
@@ -1488,6 +1495,4 @@ static void PrintRTCWindow(void) // Función que carga una ventana auxiliar en e
         AddTextPrinterParameterized(sSafariBallsWindowId, 1, gStringVar4, 0, 0, 0x10, NULL);
         CopyWindowToVram(sSafariBallsWindowId, 2);
     }
-    FillWindowPixelBuffer(sSafariBallsWindowId, PIXEL_FILL(1));                                 
-    CopyWindowToVram(sSafariBallsWindowId, 2);
 }
