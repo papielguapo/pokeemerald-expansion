@@ -328,6 +328,7 @@ static void BuildNormalStartMenu(void)
     AddStartMenuAction(MENU_ACTION_EXIT);
                 /*RTC START MENU*/
     PrintRTCWindow();//aqui cargamos la ventana ya que esta funcion se ejecuta una vez al abrir el menu*/
+    PrintRTCtime();
 
 }
 
@@ -608,7 +609,6 @@ void ShowStartMenu(void)
 
 static bool8 HandleStartMenuInput(void)
 {
-        PrintRTCtime(); /*RTC START MENU*/
     if (JOY_NEW(DPAD_UP))
     {
         PlaySE(SE_SELECT);
