@@ -607,7 +607,6 @@ void ShowStartMenu(void)
 
 static bool8 HandleStartMenuInput(void)
 {
-        PrintRTCtime(); /*RTC START MENU*/
     if (JOY_NEW(DPAD_UP))
     {
         PlaySE(SE_SELECT);
@@ -639,13 +638,15 @@ static bool8 HandleStartMenuInput(void)
         {
            FadeScreen(FADE_TO_BLACK, 0);
         }
-
+                PrintRTCtime(); /*RTC START MENU*/
         return FALSE;
     }
 
     if (JOY_NEW(START_BUTTON | B_BUTTON))
     {
         RemoveExtraStartMenuWindows();
+        ClearStdWindowAndFrameToTransparent(sSafariBallsWindowId, FALSE); /*RTC START MENU*/
+        RemoveWindow(sSafariBallsWindowId);   
         HideStartMenu();
         return TRUE;
     }
