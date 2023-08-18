@@ -606,7 +606,7 @@ void ShowStartMenu(void)
   }
 static bool8 HandleStartMenuInput(void)
 {
-    PrintRTCtime();
+    PrintRTCtime(); /*RTC START MENU*/
     if (JOY_NEW(DPAD_UP))
     {
         PlaySE(SE_SELECT);
@@ -1475,19 +1475,20 @@ void AppendToList(u8 *list, u8 *pos, u8 newEntry)
     (*pos)++;
 }
 
-  //HOEENWALKER IMPLEMENTACION Rtc_GetCurrentSecond()
-static u8 second;
+/*RTC START MENU HOENNWALKER IMPLEMENTACION Rtc_GetCurrentSecond() */
+static u8 second;/*CORTESIA DE HOENNWALKER*/
+
 static void PrintRTCWindow(void) // Función que carga una ventana auxiliar en el menú de pausa.
 {      
     sSafariBallsWindowId = AddWindow(&sStartMenuRtcWindowTemplate);
     PutWindowTilemap(sSafariBallsWindowId);
-    AddTextPrinterParameterized(sSafariBallsWindowId, 1, gStringVar4, 0, 1, 0xFF, NULL); 
+    AddTextPrinterParameterized(sSafariBallsWindowId, 1, gStringVar4, 0, 1, 0xFF, NULL);
     CopyWindowToVram(sSafariBallsWindowId, 2);
 }
 
 static void  PrintRTCtime(void)  // Funcion que carga y actualiza el tiempo constantemente.
 {
-    if(second != Rtc_GetCurrentSecond())
+    if(second != Rtc_GetCurrentSecond()) /*CORTESIA DE HOENNWALKER*/
     {
         second = Rtc_GetCurrentSecond();
         FillWindowPixelBuffer(sSafariBallsWindowId, PIXEL_FILL(0)); 
