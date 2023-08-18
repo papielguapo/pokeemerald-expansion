@@ -1481,8 +1481,6 @@ static void PrintRTCWindow(void) // Función que carga una ventana auxiliar en e
 {      
     sSafariBallsWindowId = AddWindow(&sStartMenuRtcWindowTemplate);
     PutWindowTilemap(sSafariBallsWindowId);
-//    FillWindowPixelBuffer(sSafariBallsWindowId, PIXEL_FILL(0)); 
-//    FormatDecimalRtcTimeDisplay(gStringVar4);  // al estar los segundos en un gStringVar fuerza a actualizar FormatDecimalRtcTime
     AddTextPrinterParameterized(sSafariBallsWindowId, 1, gStringVar4, 0, 1, 0xFF, NULL); 
     CopyWindowToVram(sSafariBallsWindowId, 2);
 }
