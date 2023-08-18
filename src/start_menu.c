@@ -328,8 +328,6 @@ static void BuildNormalStartMenu(void)
     AddStartMenuAction(MENU_ACTION_EXIT);
                 /*RTC START MENU*/
     PrintRTCWindow();//aqui cargamos la ventana ya que esta funcion se ejecuta una vez al abrir el menu*/
-    PrintRTCtime();
-
 }
 
 static void BuildDebugStartMenu(void)
@@ -609,6 +607,14 @@ void ShowStartMenu(void)
 
 static bool8 HandleStartMenuInput(void)
 {
+    if(second != Rtc_GetCurrentSecond())
+    {
+        second = Rtc_GetCurrentSecond();
+        FillWindowPixelBuffer(sSafariBallsWindowId, PIXEL_FILL(0)); 
+        FormatDecimalRtcTimeDisplay(gStringVar4);  // al estar los segundos en un gStringVar fuerza a actualizar FormatDecimalRtcTime
+        AddTextPrinterParameterized(sSafariBallsWindowId, 1, gStringVar4, 0, 0, 0x10, NULL);
+        CopyWindowToVram(sSafariBallsWindowId, 2);
+    }
     if (JOY_NEW(DPAD_UP))
     {
         PlaySE(SE_SELECT);
