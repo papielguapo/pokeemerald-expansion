@@ -604,7 +604,7 @@ void ShowStartMenu(void)
     }
     CreateStartMenuTask(Task_ShowStartMenu);
     LockPlayerFieldControls();
-
+  }
 static bool8 HandleStartMenuInput(void)
 {
     if (JOY_NEW(DPAD_UP))
