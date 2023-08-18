@@ -1494,6 +1494,7 @@ static void  PrintRTCtime(void)  // Funcion que carga y actualiza el tiempo cons
         second = Rtc_GetCurrentSecond();
         FillWindowPixelBuffer(sSafariBallsWindowId, PIXEL_FILL(0)); 
         FormatDecimalRtcTimeDisplay(gStringVar4);  // al estar los segundos en un gStringVar fuerza a actualizar FormatDecimalRtcTime
+        AddTextPrinterParameterized(sSafariBallsWindowId, 1, gStringVar4, 0, 1, 0xFF, NULL); 
         CopyWindowToVram(sSafariBallsWindowId, 2);
         } 
 }
