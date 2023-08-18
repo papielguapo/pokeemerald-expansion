@@ -327,7 +327,8 @@ static void BuildNormalStartMenu(void)
     AddStartMenuAction(MENU_ACTION_OPTION);
     AddStartMenuAction(MENU_ACTION_EXIT);
                 /*RTC START MENU*/
-    PrintRTCWindow();//aqui cargamos la ventana ya que esta funcion se ejecuta una vez al abrir el menu*/
+//    PrintRTCWindow();//aqui cargamos la ventana ya que esta funcion se ejecuta una vez al abrir el menu*/
+    PrintRTCtime();
 }
 
 static void BuildDebugStartMenu(void)
@@ -638,7 +639,6 @@ static bool8 HandleStartMenuInput(void)
         {
            FadeScreen(FADE_TO_BLACK, 0);
         }
-                PrintRTCtime(); /*RTC START MENU*/
         return FALSE;
     }
 
