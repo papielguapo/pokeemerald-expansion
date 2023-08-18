@@ -1488,4 +1488,6 @@ static void PrintRTCWindow(void) // Función que carga una ventana auxiliar en e
         AddTextPrinterParameterized(sSafariBallsWindowId, 1, gStringVar4, 0, 0, 0x10, NULL);
         CopyWindowToVram(sSafariBallsWindowId, 2);
     }
+    FillWindowPixelBuffer(sSafariBallsWindowId, PIXEL_FILL(1));                                 
+    CopyWindowToVram(sSafariBallsWindowId, 2);
 }
