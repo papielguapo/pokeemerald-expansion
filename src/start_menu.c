@@ -604,7 +604,7 @@ void ShowStartMenu(void)
     CreateStartMenuTask(Task_ShowStartMenu);
     LockPlayerFieldControls();
 }
-
+static u8 second;
 static bool8 HandleStartMenuInput(void)
 {
     if(second != Rtc_GetCurrentSecond())
@@ -1484,7 +1484,6 @@ void AppendToList(u8 *list, u8 *pos, u8 newEntry)
 }
 
   //HOEENWALKER IMPLEMENTACION Rtc_GetCurrentSecond()
-static u8 second;
 
 static void PrintRTCWindow(void) // Función que carga una ventana auxiliar en el menú de pausa.
 {      
