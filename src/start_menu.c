@@ -603,11 +603,11 @@ void ShowStartMenu(void)
     }
     CreateStartMenuTask(Task_ShowStartMenu);
     LockPlayerFieldControls();
-    PrintRTCtime(); /*RTC START MENU*/
 }
 
 static bool8 HandleStartMenuInput(void)
 {
+        PrintRTCtime(); /*RTC START MENU*/
     if (JOY_NEW(DPAD_UP))
     {
         PlaySE(SE_SELECT);
