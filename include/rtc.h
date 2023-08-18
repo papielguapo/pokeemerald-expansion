@@ -45,5 +45,11 @@ void RtcCalcLocalTimeOffset(s32 days, s32 hours, s32 minutes, s32 seconds);
 void CalcTimeDifference(struct Time *result, struct Time *t1, struct Time *t2);
 u32 RtcGetMinuteCount(void);
 u32 RtcGetLocalDayCount(void);
+/*RTC START MENU*/
+u8 Rtc_GetCurrentHour(void);
+u8 Rtc_GetCurrentMinute(void);
+u8 Rtc_GetCurrentSecond(void);
+void FormatDecimalTimeAndDate(u8 *dest, s32 hour, s32 minute, s32 second, s32 day, s32 month, s32 year);
+void FormatDecimalRtcTimeDisplay(u8 *dest);
 
 #endif // GUARD_RTC_UTIL_H

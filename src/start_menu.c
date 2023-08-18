@@ -30,6 +30,7 @@
 #include "party_menu.h"
 #include "pokedex.h"
 #include "pokenav.h"
+#include "rtc.h" /* AÑADE RTC START MENU*/
 #include "safari_zone.h"
 #include "save.h"
 #include "scanline_effect.h"
@@ -141,6 +142,8 @@ static void Task_WaitForBattleTowerLinkSave(u8 taskId);
 static bool8 FieldCB_ReturnToFieldStartMenu(void);
 
 static const struct WindowTemplate sSafariBallsWindowTemplate = {0, 1, 1, 9, 4, 0xF, 8};
+/*RTC START MENU*/
+static const struct WindowTemplate sStartMenuRtcWindowTemplate = {0, 1, 1, 12, 2, 0xF, 8}; // Parámetros de la ventana extra
 
 static const u8 *const sPyramidFloorNames[FRONTIER_STAGES_PER_CHALLENGE + 1] =
 {
@@ -248,6 +251,7 @@ static void ShowSaveInfoWindow(void);
 static void RemoveSaveInfoWindow(void);
 static void HideStartMenuWindow(void);
 static void HideStartMenuDebug(void);
+static void PrintRTCWindow(void);/* AÑADE RTC START MENU al final de local functions*/
 
 void SetDexPokemonPokenavFlags(void) // unused
 {
@@ -321,6 +325,8 @@ static void BuildNormalStartMenu(void)
     AddStartMenuAction(MENU_ACTION_SAVE);
     AddStartMenuAction(MENU_ACTION_OPTION);
     AddStartMenuAction(MENU_ACTION_EXIT);
+                /*RTC START MENU*/
+    PrintRTCWindow();//aqui cargamos la ventana ya que esta funcion se ejecuta una vez al abrir el menu*/
 }
 
 static void BuildDebugStartMenu(void)
@@ -433,20 +439,26 @@ static void ShowPyramidFloorWindow(void)
     CopyWindowToVram(sBattlePyramidFloorWindowId, COPYWIN_GFX);
 }
 
-static void RemoveExtraStartMenuWindows(void)
+/*MODIFICADO PARA RTC START MENU*/
+static void RemoveExtraStartMenuWindows(void) //Modificado el 23/1/2019
 {
     if (GetSafariZoneFlag())
     {
         ClearStdWindowAndFrameToTransparent(sSafariBallsWindowId, FALSE);
-        CopyWindowToVram(sSafariBallsWindowId, COPYWIN_GFX);
+        CopyWindowToVram(sSafariBallsWindowId, 2);
         RemoveWindow(sSafariBallsWindowId);
-    }
-    if (InBattlePyramid())
+    }else if (InBattlePyramid()) //Antes eran dos if separados
     {
         ClearStdWindowAndFrameToTransparent(sBattlePyramidFloorWindowId, FALSE);
         RemoveWindow(sBattlePyramidFloorWindowId);
     }
+    else{ //Borra de la pantalla la venta auxiliar de la hora
+        ClearStdWindowAndFrameToTransparent(sSafariBallsWindowId, FALSE);
+        RemoveWindow(sSafariBallsWindowId);   
+        
+    }
 }
+/**/
 
 static bool32 PrintStartMenuActions(s8 *pIndex, u32 count)
 {
@@ -1459,4 +1471,21 @@ void AppendToList(u8 *list, u8 *pos, u8 newEntry)
 {
     list[*pos] = newEntry;
     (*pos)++;
+}
+
+  //HOEENWALKER IMPLEMENTACION Rtc_GetCurrentSecond()
+static u8 second;
+
+static void PrintRTCWindow(void) // Función que carga una ventana auxiliar en el menú de pausa.
+{      
+    sSafariBallsWindowId = AddWindow(&sStartMenuRtcWindowTemplate);
+    PutWindowTilemap(sSafariBallsWindowId);
+    if(second != Rtc_GetCurrentSecond())
+    {
+        second = Rtc_GetCurrentSecond();
+        FillWindowPixelBuffer(sSafariBallsWindowId, PIXEL_FILL(0)); 
+        FormatDecimalRtcTimeDisplay(gStringVar4);  // al estar los segundos en un gStringVar fuerza a actualizar FormatDecimalRtcTime
+        AddTextPrinterParameterized(sSafariBallsWindowId, 1, gStringVar4, 0, 0, 0x10, NULL);
+        CopyWindowToVram(sSafariBallsWindowId, 2);
+    }
 }

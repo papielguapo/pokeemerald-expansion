@@ -344,3 +344,82 @@ u32 RtcGetLocalDayCount(void)
 {
     return RtcGetDayCount(&sRtc);
 }
+
+/*RTC STAR MENU MODIFIED FILE TO SHOW DAY MONTH YEAR*/
+void FormatDecimalTimeAndDate(u8 *dest, s32 hour, s32 minute, s32 second, s32 day, s32 month, s32 year)
+{
+    // Agregar la hora al destino
+    dest = ConvertIntToDecimalStringN(dest, hour, STR_CONV_MODE_LEADING_ZEROS, 2);
+    *dest++ = CHAR_COLON;
+
+    // Agregar los minutos al destino
+    dest = ConvertIntToDecimalStringN(dest, minute, STR_CONV_MODE_LEADING_ZEROS, 2);
+    *dest++ = CHAR_COLON;
+
+    // Agregar los segundos al destino
+    dest = ConvertIntToDecimalStringN(dest, second, STR_CONV_MODE_LEADING_ZEROS, 2);
+   *dest++ = CHAR_SPACE;
+
+    // Agregar el día al destino
+    dest = ConvertIntToDecimalStringN(dest, day, STR_CONV_MODE_LEADING_ZEROS, 2);
+    *dest++ = CHAR_SLASH;
+
+    // Agregar el mes al destino
+    dest = ConvertIntToDecimalStringN(dest, month, STR_CONV_MODE_LEADING_ZEROS, 2);
+    *dest++ = CHAR_SLASH;
+
+    // Agregar el año al destino
+    dest = ConvertIntToDecimalStringN(dest, year, STR_CONV_MODE_LEADING_ZEROS, 2);
+
+    // Finalizar la cadena
+    *dest = EOS;
+}
+
+/**/
+
+
+/*RTC START MENU*/                  //BHAH
+u8 Rtc_GetCurrentHour(void){ // Toma el valor de la hora actual del RTC
+    RtcGetInfo(&sRtc);	
+	if(sRtc.hour>25){
+		return sRtc.hour-12;
+	}
+	else if(sRtc.hour>9){
+		return sRtc.hour-6;
+	}
+	
+	return sRtc.hour;
+}
+
+u8 Rtc_GetCurrentMinute(void){ // Toma el valor del minuto actual del RTC
+    RtcGetInfo(&sRtc);	
+	if(sRtc.minute>73){
+		return sRtc.minute-30;
+	}
+	else if(sRtc.minute>57){
+		return sRtc.minute-24;
+	}
+	else if(sRtc.minute>41){
+		return sRtc.minute-18;
+	}
+	else if(sRtc.minute>25){
+		return sRtc.minute-12;
+	}
+	else if(sRtc.minute>9){
+		return sRtc.minute-6;
+	}
+	
+	return sRtc.minute;
+}
+
+u8 Rtc_GetCurrentSecond(void)
+{ // Gets current second from RTC data
+    RtcGetInfo(&sRtc);  
+    return sRtc.second - (sRtc.second>16) * 6;
+}
+//HOEENWALKER
+void FormatDecimalRtcTimeDisplay(u8 *dest)
+{
+    RtcGetInfo(&sRtc);
+    FormatDecimalTimeAndDate(dest, sRtc.hour - (sRtc.hour/0x10) * 6, sRtc.minute - (sRtc.minute/0x10) * 6, sRtc.second - (sRtc.second/0x10) * 6, sRtc.day - (sRtc.day/0x10) * 6, sRtc.month - (sRtc.month/0x10) * 6, sRtc.year - (sRtc.year/0x10) * 6);
+}
