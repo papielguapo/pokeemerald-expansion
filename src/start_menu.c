@@ -47,10 +47,12 @@
 #include "constants/battle_frontier.h"
 #include "constants/rgb.h"
 #include "constants/songs.h"
+#include "ui_menu.h"
 
 // Menu actions
 enum
-{
+{   
+    MENU_ACTION_UI_MENU,
     MENU_ACTION_POKEDEX,
     MENU_ACTION_POKEMON,
     MENU_ACTION_BAG,
@@ -106,6 +108,7 @@ static bool8 StartMenuLinkModePlayerNameCallback(void);
 static bool8 StartMenuBattlePyramidRetireCallback(void);
 static bool8 StartMenuBattlePyramidBagCallback(void);
 static bool8 StartMenuDebugCallback(void);
+static bool8 StartMenuUiMenuCallback(void); //UI MENU
 
 // Menu callbacks
 static bool8 SaveStartCallback(void);
@@ -158,9 +161,11 @@ static const struct WindowTemplate sPyramidFloorWindowTemplate_2 = {0, 1, 1, 0xA
 static const struct WindowTemplate sPyramidFloorWindowTemplate_1 = {0, 1, 1, 0xC, 4, 0xF, 8};
 
 static const u8 gText_MenuDebug[] = _("DEBUG");
+static const u8 sText_NewMenu[] = _("MINIGAME");    //UI MENU
 
 static const struct MenuAction sStartMenuItems[] =
 {
+    [MENU_ACTION_UI_MENU]         = {sText_NewMenu,     {.u8_void = StartMenuUiMenuCallback}},  // UI MENU
     [MENU_ACTION_POKEDEX]         = {gText_MenuPokedex, {.u8_void = StartMenuPokedexCallback}},
     [MENU_ACTION_POKEMON]         = {gText_MenuPokemon, {.u8_void = StartMenuPokemonCallback}},
     [MENU_ACTION_BAG]             = {gText_MenuBag,     {.u8_void = StartMenuBagCallback}},
@@ -316,6 +321,8 @@ static void BuildNormalStartMenu(void)
     {
         AddStartMenuAction(MENU_ACTION_POKENAV);
     }
+    
+    AddStartMenuAction(MENU_ACTION_UI_MENU);  // UI MENU
 
     AddStartMenuAction(MENU_ACTION_PLAYER);
     AddStartMenuAction(MENU_ACTION_SAVE);
@@ -1459,4 +1466,10 @@ void AppendToList(u8 *list, u8 *pos, u8 newEntry)
 {
     list[*pos] = newEntry;
     (*pos)++;
+}
+
+static bool8 StartMenuUiMenuCallback(void)      // UI MENU
+{
+    CreateTask(Task_OpenMenuFromStartMenu, 0);
+    return TRUE;
 }
