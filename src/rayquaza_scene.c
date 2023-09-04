@@ -60,12 +60,10 @@ enum
 
 #define MAX_SMOKE 10
 
-typedef u8 ALIGNED(4) TilemapBuffer[BG_SCREEN_SIZE];
-
 struct RayquazaScene
 {
     MainCallback exitCallback;
-    TilemapBuffer tilemapBuffers[4];
+    u8 tilemapBuffers[4][BG_SCREEN_SIZE];
     u16 unk; // never read
     u8 animId;
     bool8 endEarly;
@@ -156,7 +154,7 @@ static const struct OamData sOam_64x64 =
     .y = 0,
     .affineMode = ST_OAM_AFFINE_OFF,
     .objMode = ST_OAM_OBJ_NORMAL,
-    .mosaic = FALSE,
+    .mosaic = 0,
     .bpp = ST_OAM_4BPP,
     .shape = SPRITE_SHAPE(64x64),
     .x = 0,
@@ -173,7 +171,7 @@ static const struct OamData sOam_32x32 =
     .y = 0,
     .affineMode = ST_OAM_AFFINE_OFF,
     .objMode = ST_OAM_OBJ_NORMAL,
-    .mosaic = FALSE,
+    .mosaic = 0,
     .bpp = ST_OAM_4BPP,
     .shape = SPRITE_SHAPE(32x32),
     .x = 0,
@@ -190,7 +188,7 @@ static const struct OamData sOam_64x32 =
     .y = 0,
     .affineMode = ST_OAM_AFFINE_OFF,
     .objMode = ST_OAM_OBJ_NORMAL,
-    .mosaic = FALSE,
+    .mosaic = 0,
     .bpp = ST_OAM_4BPP,
     .shape = SPRITE_SHAPE(64x32),
     .x = 0,
@@ -207,7 +205,7 @@ static const struct OamData sOam_32x16 =
     .y = 0,
     .affineMode = ST_OAM_AFFINE_OFF,
     .objMode = ST_OAM_OBJ_NORMAL,
-    .mosaic = FALSE,
+    .mosaic = 0,
     .bpp = ST_OAM_4BPP,
     .shape = SPRITE_SHAPE(32x16),
     .x = 0,
@@ -224,7 +222,7 @@ static const struct OamData sOam_16x8 =
     .y = 0,
     .affineMode = ST_OAM_AFFINE_OFF,
     .objMode = ST_OAM_OBJ_NORMAL,
-    .mosaic = FALSE,
+    .mosaic = 0,
     .bpp = ST_OAM_4BPP,
     .shape = SPRITE_SHAPE(16x8),
     .x = 0,
@@ -241,7 +239,7 @@ static const struct OamData sOam_16x32 =
     .y = 0,
     .affineMode = ST_OAM_AFFINE_OFF,
     .objMode = ST_OAM_OBJ_NORMAL,
-    .mosaic = FALSE,
+    .mosaic = 0,
     .bpp = ST_OAM_4BPP,
     .shape = SPRITE_SHAPE(16x32),
     .x = 0,
@@ -258,7 +256,7 @@ static const struct OamData sOam_16x16 =
     .y = 0,
     .affineMode = ST_OAM_AFFINE_OFF,
     .objMode = ST_OAM_OBJ_NORMAL,
-    .mosaic = FALSE,
+    .mosaic = 0,
     .bpp = ST_OAM_4BPP,
     .shape = SPRITE_SHAPE(16x16),
     .x = 0,
@@ -275,7 +273,7 @@ static const struct OamData sOam_32x8 =
     .y = 0,
     .affineMode = ST_OAM_AFFINE_OFF,
     .objMode = ST_OAM_OBJ_NORMAL,
-    .mosaic = FALSE,
+    .mosaic = 0,
     .bpp = ST_OAM_4BPP,
     .shape = SPRITE_SHAPE(32x8),
     .x = 0,
@@ -492,7 +490,7 @@ static const struct SpriteTemplate sSpriteTemplate_DuoFightPre_KyogreDorsalFin =
 
 static const struct ScanlineEffectParams sScanlineParams_DuoFight_Clouds =
 {
-    .dmaDest = &REG_BG1HOFS,
+    .dmaDest = (vu16 *)REG_ADDR_BG1HOFS,
     .dmaControl = SCANLINE_EFFECT_DMACNT_16BIT,
     .initState = 1
 };
@@ -1303,7 +1301,7 @@ static void CB2_InitRayquazaScene(void)
     ResetPaletteFade();
     ResetSpriteData();
     ResetTasks();
-    FillPalette(RGB_BLACK, BG_PLTT_ID(15), PLTT_SIZE_4BPP);
+    FillPalette(RGB_BLACK, 0xF0, 32);
     CreateTask(sTasksForAnimations[sRayScene->animId], 0);
     SetMainCallback2(CB2_RayquazaScene);
 }
@@ -1435,34 +1433,34 @@ static void SpriteCB_DuoFightPre_Groudon(struct Sprite *sprite)
     s16 *data = sprite->data;
     data[5]++;
     data[5] &= 0x1F;
-    if (data[5] == 0 && sprite->x != 72)
+    if (data[5] == 0 && sprite->pos1.x != 72)
     {
-        sprite->x--;
-        gSprites[sprite->sGroudonBodySpriteId].x--;
-        gSprites[sGroudonShoulderSpriteId].x--;
-        gSprites[sGroudonClawSpriteId].x--;
+        sprite->pos1.x--;
+        gSprites[sprite->sGroudonBodySpriteId].pos1.x--;
+        gSprites[sGroudonShoulderSpriteId].pos1.x--;
+        gSprites[sGroudonClawSpriteId].pos1.x--;
     }
 
     switch (sprite->animCmdIndex)
     {
     case 0:
-        gSprites[sGroudonShoulderSpriteId].x2 = 0;
-        gSprites[sGroudonShoulderSpriteId].y2 = 0;
-        gSprites[sGroudonClawSpriteId].x2 = 0;
-        gSprites[sGroudonClawSpriteId].y2 = 0;
+        gSprites[sGroudonShoulderSpriteId].pos2.x = 0;
+        gSprites[sGroudonShoulderSpriteId].pos2.y = 0;
+        gSprites[sGroudonClawSpriteId].pos2.x = 0;
+        gSprites[sGroudonClawSpriteId].pos2.y = 0;
         break;
     case 1:
     case 3:
-        gSprites[sGroudonShoulderSpriteId].x2 = -1;
-        gSprites[sGroudonShoulderSpriteId].y2 = 0;
-        gSprites[sGroudonClawSpriteId].x2 = -1;
-        gSprites[sGroudonClawSpriteId].y2 = 0;
+        gSprites[sGroudonShoulderSpriteId].pos2.x = -1;
+        gSprites[sGroudonShoulderSpriteId].pos2.y = 0;
+        gSprites[sGroudonClawSpriteId].pos2.x = -1;
+        gSprites[sGroudonClawSpriteId].pos2.y = 0;
         break;
     case 2:
-        gSprites[sGroudonShoulderSpriteId].x2 = -1;
-        gSprites[sGroudonShoulderSpriteId].y2 = 1;
-        gSprites[sGroudonClawSpriteId].x2 = -2;
-        gSprites[sGroudonClawSpriteId].y2 = 1;
+        gSprites[sGroudonShoulderSpriteId].pos2.x = -1;
+        gSprites[sGroudonShoulderSpriteId].pos2.y = 1;
+        gSprites[sGroudonClawSpriteId].pos2.x = -2;
+        gSprites[sGroudonClawSpriteId].pos2.y = 1;
         break;
     }
 }
@@ -1504,58 +1502,58 @@ static void SpriteCB_DuoFightPre_Kyogre(struct Sprite *sprite)
     s16 *data = sprite->data;
     data[5]++;
     data[5] &= 0x1F;
-    if (data[5] == 0 && sprite->x != 152)
+    if (data[5] == 0 && sprite->pos1.x != 152)
     {
-        sprite->x++;
-        gSprites[sprite->data[0] >> 8].x++;
-        gSprites[sprite->data[0] & 0xFF].x++;
-        gSprites[data[1] >> 8].x++;
-        gSprites[data[1] & 0xFF].x++;
-        gSprites[data[2] >> 8].x++;
-        gSprites[data[2] & 0xFF].x++;
-        gSprites[data[3] >> 8].x++;
-        gSprites[data[3] & 0xFF].x++;
-        gSprites[data[4] >> 8].x++;
-        gSprites[data[4] & 0xFF].x++;
+        sprite->pos1.x++;
+        gSprites[sprite->data[0] >> 8].pos1.x++;
+        gSprites[sprite->data[0] & 0xFF].pos1.x++;
+        gSprites[data[1] >> 8].pos1.x++;
+        gSprites[data[1] & 0xFF].pos1.x++;
+        gSprites[data[2] >> 8].pos1.x++;
+        gSprites[data[2] & 0xFF].pos1.x++;
+        gSprites[data[3] >> 8].pos1.x++;
+        gSprites[data[3] & 0xFF].pos1.x++;
+        gSprites[data[4] >> 8].pos1.x++;
+        gSprites[data[4] & 0xFF].pos1.x++;
     }
 
     switch (gSprites[data[2] & 0xFF].animCmdIndex)
     {
     case 0:
-        sprite->y2 = 0;
-        gSprites[data[0] >> 8].y2 = 0;
-        gSprites[data[0] & 0xFF].y2 = 0;
-        gSprites[data[1] >> 8].y2 = 0;
-        gSprites[data[1] & 0xFF].y2 = 0;
-        gSprites[data[2] >> 8].y2 = 0;
-        gSprites[data[2] & 0xFF].y2 = 0;
-        gSprites[data[3] >> 8].y2 = 0;
-        gSprites[data[3] & 0xFF].y2 = 0;
-        gSprites[data[4] >> 8].y2 = 0;
-        gSprites[data[4] & 0xFF].y2 = 0;
+        sprite->pos2.y = 0;
+        gSprites[data[0] >> 8].pos2.y = 0;
+        gSprites[data[0] & 0xFF].pos2.y = 0;
+        gSprites[data[1] >> 8].pos2.y = 0;
+        gSprites[data[1] & 0xFF].pos2.y = 0;
+        gSprites[data[2] >> 8].pos2.y = 0;
+        gSprites[data[2] & 0xFF].pos2.y = 0;
+        gSprites[data[3] >> 8].pos2.y = 0;
+        gSprites[data[3] & 0xFF].pos2.y = 0;
+        gSprites[data[4] >> 8].pos2.y = 0;
+        gSprites[data[4] & 0xFF].pos2.y = 0;
         break;
     case 1:
     case 3:
-        sprite->y2 = 1;
-        gSprites[data[0] >> 8].y2 = 1;
-        gSprites[data[0] & 0xFF].y2 = 1;
-        gSprites[data[1] >> 8].y2 = 1;
-        gSprites[data[1] & 0xFF].y2 = 1;
-        gSprites[data[2] >> 8].y2 = 1;
-        gSprites[data[2] & 0xFF].y2 = 1;
-        gSprites[data[3] >> 8].y2 = 1;
-        gSprites[data[3] & 0xFF].y2 = 1;
-        gSprites[data[4] >> 8].y2 = 1;
-        gSprites[data[4] & 0xFF].y2 = 1;
+        sprite->pos2.y = 1;
+        gSprites[data[0] >> 8].pos2.y = 1;
+        gSprites[data[0] & 0xFF].pos2.y = 1;
+        gSprites[data[1] >> 8].pos2.y = 1;
+        gSprites[data[1] & 0xFF].pos2.y = 1;
+        gSprites[data[2] >> 8].pos2.y = 1;
+        gSprites[data[2] & 0xFF].pos2.y = 1;
+        gSprites[data[3] >> 8].pos2.y = 1;
+        gSprites[data[3] & 0xFF].pos2.y = 1;
+        gSprites[data[4] >> 8].pos2.y = 1;
+        gSprites[data[4] & 0xFF].pos2.y = 1;
         break;
     case 2:
-        sprite->y2 = 2;
-        gSprites[data[0] >> 8].y2 = 2;
-        gSprites[data[0] & 0xFF].y2 = 2;
-        gSprites[data[1] >> 8].y2 = 2;
-        gSprites[data[1] & 0xFF].y2 = 2;
-        gSprites[data[2] >> 8].y2 = 2;
-        gSprites[data[4] & 0xFF].y2 = 2;
+        sprite->pos2.y = 2;
+        gSprites[data[0] >> 8].pos2.y = 2;
+        gSprites[data[0] & 0xFF].pos2.y = 2;
+        gSprites[data[1] >> 8].pos2.y = 2;
+        gSprites[data[1] & 0xFF].pos2.y = 2;
+        gSprites[data[2] >> 8].pos2.y = 2;
+        gSprites[data[4] & 0xFF].pos2.y = 2;
         break;
     }
 }
@@ -1594,7 +1592,7 @@ static void LoadDuoFightSceneGfx(void)
     LZDecompressWram(gRaySceneDuoFight_Clouds2_Tilemap, sRayScene->tilemapBuffers[0]);
     LZDecompressWram(gRaySceneDuoFight_Clouds1_Tilemap, sRayScene->tilemapBuffers[1]);
     LZDecompressWram(gRaySceneDuoFight_Clouds3_Tilemap, sRayScene->tilemapBuffers[2]);
-    LoadCompressedPalette(gRaySceneDuoFight_Clouds_Pal, BG_PLTT_ID(0), 2 * PLTT_SIZE_4BPP);
+    LoadCompressedPalette(gRaySceneDuoFight_Clouds_Pal, 0, 0x40);
     LoadCompressedSpriteSheet(&sSpriteSheet_DuoFight_Groudon);
     LoadCompressedSpriteSheet(&sSpriteSheet_DuoFight_GroudonShoulder);
     LoadCompressedSpriteSheet(&sSpriteSheet_DuoFight_GroudonClaw);
@@ -1629,7 +1627,7 @@ static void Task_DuoFightAnim(u8 taskId)
         StopMapMusic();
     }
 
-    BlendPalettes(PALETTES_ALL, 0x10, RGB_BLACK);
+    BlendPalettes(PALETTES_ALL, 0x10, 0);
     BeginNormalPaletteFade(PALETTES_ALL, 0, 0x10, 0, RGB_BLACK);
     SetVBlankCallback(VBlankCB_DuoFight);
     PlaySE(SE_DOWNPOUR);
@@ -1759,8 +1757,8 @@ static void DuoFight_LightningLong(void)
 
 static void DuoFight_AnimateRain(void)
 {
-    ChangeBgX(2, 0x400, BG_COORD_ADD);
-    ChangeBgY(2, 0x800, BG_COORD_SUB);
+    ChangeBgX(2, 0x400, 1);
+    ChangeBgY(2, 0x800, 2);
 }
 
 // Only used by the full version, which pans up at the end (so scene objects move down)
@@ -1774,7 +1772,7 @@ static void DuoFight_PanOffScene(u8 taskId)
 
     bgY = GetBgY(1);
     if (GetBgY(1) == 0 || bgY > 0x8000)
-        ChangeBgY(1, 0x400, BG_COORD_SUB);
+        ChangeBgY(1, 0x400, 2);
 
     if (tTimer != 16)
     {
@@ -1797,7 +1795,7 @@ static void Task_DuoFightEnd(u8 taskId)
     if (!gPaletteFade.active)
     {
         DestroyTask(tHelperTaskId);
-        ChangeBgY(1, 0, BG_COORD_SET);
+        ChangeBgY(1, 0, 0);
         SetVBlankCallback(NULL);
         ScanlineEffect_Stop();
         ResetSpriteData();
@@ -1827,34 +1825,34 @@ static void SpriteCB_DuoFight_Groudon(struct Sprite *sprite)
     s16 *data = sprite->data;
     data[5]++;
     data[5] &= 0xF;
-    if (!(data[5] & 7) && sprite->x != 72)
+    if (!(data[5] & 7) && sprite->pos1.x != 72)
     {
-        sprite->x--;
-        gSprites[sprite->sGroudonBodySpriteId].x--;
-        gSprites[sGroudonShoulderSpriteId].x--;
-        gSprites[sGroudonClawSpriteId].x--;
+        sprite->pos1.x--;
+        gSprites[sprite->sGroudonBodySpriteId].pos1.x--;
+        gSprites[sGroudonShoulderSpriteId].pos1.x--;
+        gSprites[sGroudonClawSpriteId].pos1.x--;
     }
 
     switch (sprite->animCmdIndex)
     {
     case 0:
-        gSprites[sGroudonShoulderSpriteId].x2 = 0;
-        gSprites[sGroudonShoulderSpriteId].y2 = 0;
-        gSprites[sGroudonClawSpriteId].x2 = 0;
-        gSprites[sGroudonClawSpriteId].y2 = 0;
+        gSprites[sGroudonShoulderSpriteId].pos2.x = 0;
+        gSprites[sGroudonShoulderSpriteId].pos2.y = 0;
+        gSprites[sGroudonClawSpriteId].pos2.x = 0;
+        gSprites[sGroudonClawSpriteId].pos2.y = 0;
         break;
     case 1:
     case 3:
-        gSprites[sGroudonShoulderSpriteId].x2 = -1;
-        gSprites[sGroudonShoulderSpriteId].y2 = 0;
-        gSprites[sGroudonClawSpriteId].x2 = -1;
-        gSprites[sGroudonClawSpriteId].y2 = 0;
+        gSprites[sGroudonShoulderSpriteId].pos2.x = -1;
+        gSprites[sGroudonShoulderSpriteId].pos2.y = 0;
+        gSprites[sGroudonClawSpriteId].pos2.x = -1;
+        gSprites[sGroudonClawSpriteId].pos2.y = 0;
         break;
     case 2:
-        gSprites[sGroudonShoulderSpriteId].x2 = -1;
-        gSprites[sGroudonShoulderSpriteId].y2 = 1;
-        gSprites[sGroudonClawSpriteId].x2 = -2;
-        gSprites[sGroudonClawSpriteId].y2 = 1;
+        gSprites[sGroudonShoulderSpriteId].pos2.x = -1;
+        gSprites[sGroudonShoulderSpriteId].pos2.y = 1;
+        gSprites[sGroudonClawSpriteId].pos2.x = -2;
+        gSprites[sGroudonClawSpriteId].pos2.y = 1;
         break;
     }
 }
@@ -1862,12 +1860,12 @@ static void SpriteCB_DuoFight_Groudon(struct Sprite *sprite)
 static void DuoFight_SlideGroudonDown(struct Sprite *sprite)
 {
     s16 *data = sprite->data;
-    if (sprite->y <= DISPLAY_HEIGHT)
+    if (sprite->pos1.y <= 160)
     {
-        sprite->y += 8;
-        gSprites[sprite->sGroudonBodySpriteId].y += 8;
-        gSprites[sGroudonShoulderSpriteId].y += 8;
-        gSprites[sGroudonClawSpriteId].y += 8;
+        sprite->pos1.y += 8;
+        gSprites[sprite->sGroudonBodySpriteId].pos1.y += 8;
+        gSprites[sGroudonShoulderSpriteId].pos1.y += 8;
+        gSprites[sGroudonClawSpriteId].pos1.y += 8;
     }
 }
 
@@ -1908,58 +1906,58 @@ static void SpriteCB_DuoFight_Kyogre(struct Sprite *sprite)
     s16 *data = sprite->data;
     data[5]++;
     data[5] &= 0xF;
-    if (!(data[5] & 7) && sprite->x != 152)
+    if (!(data[5] & 7) && sprite->pos1.x != 152)
     {
-        sprite->x++;
-        gSprites[sprite->data[0] >> 8].x++;
-        gSprites[sprite->data[0] & 0xFF].x++;
-        gSprites[data[1] >> 8].x++;
-        gSprites[data[1] & 0xFF].x++;
-        gSprites[data[2] >> 8].x++;
-        gSprites[data[2] & 0xFF].x++;
-        gSprites[data[3] >> 8].x++;
-        gSprites[data[3] & 0xFF].x++;
-        gSprites[data[4] >> 8].x++;
-        gSprites[data[4] & 0xFF].x++;
+        sprite->pos1.x++;
+        gSprites[sprite->data[0] >> 8].pos1.x++;
+        gSprites[sprite->data[0] & 0xFF].pos1.x++;
+        gSprites[data[1] >> 8].pos1.x++;
+        gSprites[data[1] & 0xFF].pos1.x++;
+        gSprites[data[2] >> 8].pos1.x++;
+        gSprites[data[2] & 0xFF].pos1.x++;
+        gSprites[data[3] >> 8].pos1.x++;
+        gSprites[data[3] & 0xFF].pos1.x++;
+        gSprites[data[4] >> 8].pos1.x++;
+        gSprites[data[4] & 0xFF].pos1.x++;
     }
 
     switch (gSprites[data[2] & 0xFF].animCmdIndex)
     {
     case 0:
-        sprite->y2 = 0;
-        gSprites[data[0] >> 8].y2 = 0;
-        gSprites[data[0] & 0xFF].y2 = 0;
-        gSprites[data[1] >> 8].y2 = 0;
-        gSprites[data[1] & 0xFF].y2 = 0;
-        gSprites[data[2] >> 8].y2 = 0;
-        gSprites[data[2] & 0xFF].y2 = 0;
-        gSprites[data[3] >> 8].y2 = 0;
-        gSprites[data[3] & 0xFF].y2 = 0;
-        gSprites[data[4] >> 8].y2 = 0;
-        gSprites[data[4] & 0xFF].y2 = 0;
+        sprite->pos2.y = 0;
+        gSprites[data[0] >> 8].pos2.y = 0;
+        gSprites[data[0] & 0xFF].pos2.y = 0;
+        gSprites[data[1] >> 8].pos2.y = 0;
+        gSprites[data[1] & 0xFF].pos2.y = 0;
+        gSprites[data[2] >> 8].pos2.y = 0;
+        gSprites[data[2] & 0xFF].pos2.y = 0;
+        gSprites[data[3] >> 8].pos2.y = 0;
+        gSprites[data[3] & 0xFF].pos2.y = 0;
+        gSprites[data[4] >> 8].pos2.y = 0;
+        gSprites[data[4] & 0xFF].pos2.y = 0;
         break;
     case 1:
     case 3:
-        sprite->y2 = 1;
-        gSprites[data[0] >> 8].y2 = 1;
-        gSprites[data[0] & 0xFF].y2 = 1;
-        gSprites[data[1] >> 8].y2 = 1;
-        gSprites[data[1] & 0xFF].y2 = 1;
-        gSprites[data[2] >> 8].y2 = 1;
-        gSprites[data[2] & 0xFF].y2 = 1;
-        gSprites[data[3] >> 8].y2 = 1;
-        gSprites[data[3] & 0xFF].y2 = 1;
-        gSprites[data[4] >> 8].y2 = 1;
-        gSprites[data[4] & 0xFF].y2 = 1;
+        sprite->pos2.y = 1;
+        gSprites[data[0] >> 8].pos2.y = 1;
+        gSprites[data[0] & 0xFF].pos2.y = 1;
+        gSprites[data[1] >> 8].pos2.y = 1;
+        gSprites[data[1] & 0xFF].pos2.y = 1;
+        gSprites[data[2] >> 8].pos2.y = 1;
+        gSprites[data[2] & 0xFF].pos2.y = 1;
+        gSprites[data[3] >> 8].pos2.y = 1;
+        gSprites[data[3] & 0xFF].pos2.y = 1;
+        gSprites[data[4] >> 8].pos2.y = 1;
+        gSprites[data[4] & 0xFF].pos2.y = 1;
         break;
     case 2:
-        sprite->y2 = 2;
-        gSprites[data[0] >> 8].y2 = 2;
-        gSprites[data[0] & 0xFF].y2 = 2;
-        gSprites[data[1] >> 8].y2 = 2;
-        gSprites[data[1] & 0xFF].y2 = 2;
-        gSprites[data[2] >> 8].y2 = 2;
-        gSprites[data[4] & 0xFF].y2 = 2;
+        sprite->pos2.y = 2;
+        gSprites[data[0] >> 8].pos2.y = 2;
+        gSprites[data[0] & 0xFF].pos2.y = 2;
+        gSprites[data[1] >> 8].pos2.y = 2;
+        gSprites[data[1] & 0xFF].pos2.y = 2;
+        gSprites[data[2] >> 8].pos2.y = 2;
+        gSprites[data[4] & 0xFF].pos2.y = 2;
         break;
     }
 }
@@ -1967,19 +1965,19 @@ static void SpriteCB_DuoFight_Kyogre(struct Sprite *sprite)
 static void DuoFight_SlideKyogreDown(struct Sprite *sprite)
 {
     s16 *data = sprite->data;
-    if (sprite->y <= DISPLAY_HEIGHT)
+    if (sprite->pos1.y <= 160)
     {
-        sprite->y += 8;
-        gSprites[sprite->data[0] >> 8].y += 8;
-        gSprites[sprite->data[0] & 0xFF].y += 8;
-        gSprites[data[1] >> 8].y += 8;
-        gSprites[data[1] & 0xFF].y += 8;
-        gSprites[data[2] >> 8].y += 8;
-        gSprites[data[2] & 0xFF].y += 8;
-        gSprites[data[3] >> 8].y += 8;
-        gSprites[data[3] & 0xFF].y += 8;
-        gSprites[data[4] >> 8].y += 8;
-        gSprites[data[4] & 0xFF].y += 8;
+        sprite->pos1.y += 8;
+        gSprites[sprite->data[0] >> 8].pos1.y += 8;
+        gSprites[sprite->data[0] & 0xFF].pos1.y += 8;
+        gSprites[data[1] >> 8].pos1.y += 8;
+        gSprites[data[1] & 0xFF].pos1.y += 8;
+        gSprites[data[2] >> 8].pos1.y += 8;
+        gSprites[data[2] & 0xFF].pos1.y += 8;
+        gSprites[data[3] >> 8].pos1.y += 8;
+        gSprites[data[3] & 0xFF].pos1.y += 8;
+        gSprites[data[4] >> 8].pos1.y += 8;
+        gSprites[data[4] & 0xFF].pos1.y += 8;
     }
 }
 
@@ -2034,7 +2032,7 @@ static void LoadTakesFlightSceneGfx(void)
     LZDecompressWram(gRaySceneDuoFight_Clouds2_Tilemap, sRayScene->tilemapBuffers[0]);
     LZDecompressWram(gRaySceneTakesFlight_Bg_Tilemap, sRayScene->tilemapBuffers[1]);
     LZDecompressWram(gRaySceneTakesFlight_Rayquaza_Tilemap, sRayScene->tilemapBuffers[2]);
-    LoadCompressedPalette(gRaySceneTakesFlight_Rayquaza_Pal, BG_PLTT_ID(0), 2 * PLTT_SIZE_4BPP);
+    LoadCompressedPalette(gRaySceneTakesFlight_Rayquaza_Pal, 0, 64);
     LoadCompressedSpriteSheet(&sSpriteSheet_TakesFlight_Smoke);
     LoadCompressedSpritePalette(&sSpritePal_TakesFlight_Smoke);
 }
@@ -2186,13 +2184,13 @@ static void SpriteCB_TakesFlight_Smoke(struct Sprite *sprite)
 {
     if (sprite->sTimer == 0)
     {
-        sprite->x2 = 0;
-        sprite->y2 = 0;
+        sprite->pos2.x = 0;
+        sprite->pos2.y = 0;
     }
     else
     {
-        sprite->x2 += sTakesFlight_SmokeCoords[sprite->sSmokeId][0];
-        sprite->y2 += sTakesFlight_SmokeCoords[sprite->sSmokeId][1];
+        sprite->pos2.x += sTakesFlight_SmokeCoords[sprite->sSmokeId][0];
+        sprite->pos2.y += sTakesFlight_SmokeCoords[sprite->sSmokeId][1];
     }
 
     sprite->sTimer++;
@@ -2240,7 +2238,7 @@ static void LoadDescendsSceneGfx(void)
     CpuFastCopy(sRayScene->tilemapBuffers[3], sRayScene->tilemapBuffers[1], BG_SCREEN_SIZE);
     CpuFastFill16(0, &sRayScene->tilemapBuffers[1][0x100], 0x340);
 
-    LoadCompressedPalette(gRaySceneDescends_Bg_Pal, BG_PLTT_ID(0), 2 * PLTT_SIZE_4BPP);
+    LoadCompressedPalette(gRaySceneDescends_Bg_Pal, 0, 0x40);
     gPlttBufferUnfaded[0] = RGB_WHITE;
     gPlttBufferFaded[0] = RGB_WHITE;
     LoadCompressedSpriteSheet(&sSpriteSheet_Descends_Rayquaza);
@@ -2286,7 +2284,7 @@ static void Task_RayDescendsAnim(u8 taskId)
     LoadDescendsSceneGfx();
     SetGpuRegBits(REG_OFFSET_BLDCNT, BLDCNT_TGT1_BG0 | BLDCNT_TGT2_BG1 | BLDCNT_TGT2_BG2 | BLDCNT_TGT2_BG3 | BLDCNT_TGT2_OBJ | BLDCNT_EFFECT_BLEND);
     SetGpuReg(REG_OFFSET_BLDALPHA, BLDALPHA_BLEND(0, 16));
-    BlendPalettes(PALETTES_ALL, 0x10, RGB_BLACK);
+    BlendPalettes(PALETTES_ALL, 0x10, 0);
     SetVBlankCallback(VBlankCB_RayquazaScene);
     sRayScene->revealedLightLine = 0;
     sRayScene->revealedLightTimer = 0;
@@ -2394,7 +2392,7 @@ static void SpriteCB_Descends_Rayquaza(struct Sprite *sprite)
 {
     s16 *data = sprite->data;
     s16 frame = sTimer;
-
+    
     // Updates to Rayquaza's coords occur more frequently
     // as time goes on (it accelerates as it emerges)
     if (frame == 0)
@@ -2435,13 +2433,13 @@ static void SpriteCB_Descends_Rayquaza(struct Sprite *sprite)
 
     if (sTimer % sXMovePeriod == 0)
     {
-        sprite->x2--;
-        gSprites[sTailSpriteId].x2--;
+        sprite->pos2.x--;
+        gSprites[sTailSpriteId].pos2.x--;
     }
     if (sTimer % sYMovePeriod == 0)
     {
-        sprite->y2++;
-        gSprites[sTailSpriteId].y2++;
+        sprite->pos2.y++;
+        gSprites[sTailSpriteId].pos2.y++;
     }
 
     sTimer++;
@@ -2489,7 +2487,7 @@ static void LoadChargesSceneGfx(void)
     LZDecompressWram(gRaySceneCharges_Rayquaza_Tilemap, sRayScene->tilemapBuffers[1]);
     LZDecompressWram(gRaySceneCharges_Streaks_Tilemap, sRayScene->tilemapBuffers[2]);
     LZDecompressWram(gRaySceneCharges_Bg_Tilemap, sRayScene->tilemapBuffers[3]);
-    LoadCompressedPalette(gRaySceneCharges_Bg_Pal, BG_PLTT_ID(0), 4 * PLTT_SIZE_4BPP);
+    LoadCompressedPalette(gRaySceneCharges_Bg_Pal, 0, 0x80);
 }
 
 #define tState          data[0]
@@ -2503,7 +2501,7 @@ static void Task_RayChargesAnim(u8 taskId)
     InitChargesSceneBgs();
     LoadChargesSceneGfx();
     SetWindowsHideVertBorders();
-    BlendPalettes(PALETTES_ALL, 0x10, RGB_BLACK);
+    BlendPalettes(PALETTES_ALL, 0x10, 0);
     SetVBlankCallback(VBlankCB_RayquazaScene);
     tState = 0;
     tTimer = 0;
@@ -2581,8 +2579,8 @@ static void Task_RayCharges_ShakeRayquaza(u8 taskId)
     s16 *data = gTasks[taskId].data;
     if ((tTimer & 3) == 0)
     {
-        ChangeBgX(1, (Random() % 8 - 4) << 8, BG_COORD_SET);
-        ChangeBgY(1, (Random() % 8 - 4) << 8, BG_COORD_SET);
+        ChangeBgX(1, (Random() % 8 - 4) << 8, 0);
+        ChangeBgY(1, (Random() % 8 - 4) << 8, 0);
     }
 
     tTimer++;
@@ -2594,16 +2592,16 @@ static void Task_RayCharges_FlyOffscreen(u8 taskId)
     s16 *data = gTasks[taskId].data;
     if (tState == 0)
     {
-        ChangeBgX(1, 0, BG_COORD_SET);
-        ChangeBgY(1, 0, BG_COORD_SET);
+        ChangeBgX(1, 0, 0);
+        ChangeBgY(1, 0, 0);
         tState++;
         tOffset = 10;
         tShakeDir = -1;
     }
     else if (tState == 1)
     {
-        ChangeBgX(1, tOffset << 8, BG_COORD_SUB);
-        ChangeBgY(1, tOffset << 8, BG_COORD_ADD);
+        ChangeBgX(1, tOffset << 8, 2);
+        ChangeBgY(1, tOffset << 8, 1);
         tOffset += tShakeDir;
         if (tOffset == -10)
             tShakeDir *= -1;
@@ -2618,12 +2616,12 @@ static void Task_RayCharges_FlyOffscreen(u8 taskId)
 static void RayCharges_AnimateBg(void)
 {
     // Update yellow orbs
-    ChangeBgX(2, 0x400, BG_COORD_SUB);
-    ChangeBgY(2, 0x400, BG_COORD_ADD);
+    ChangeBgX(2, 0x400, 2);
+    ChangeBgY(2, 0x400, 1);
 
     // Update blue streaks
-    ChangeBgX(0, 0x800, BG_COORD_SUB);
-    ChangeBgY(0, 0x800, BG_COORD_ADD);
+    ChangeBgX(0, 0x800, 2);
+    ChangeBgY(0, 0x800, 1);
 }
 
 static void Task_RayChargesEnd(u8 taskId)
@@ -2673,7 +2671,7 @@ static void LoadChasesAwaySceneGfx(void)
     LZDecompressWram(gRaySceneChasesAway_Bg_Tilemap, sRayScene->tilemapBuffers[1]);
     LZDecompressWram(gRaySceneChasesAway_Light_Tilemap, sRayScene->tilemapBuffers[0]);
     LZDecompressWram(gRaySceneChasesAway_Ring_Tilemap, sRayScene->tilemapBuffers[2]);
-    LoadCompressedPalette(gRaySceneChasesAway_Bg_Pal, BG_PLTT_ID(0), 3 * PLTT_SIZE_4BPP);
+    LoadCompressedPalette(gRaySceneChasesAway_Bg_Pal, 0, 0x60);
     LoadCompressedSpriteSheet(&sSpriteSheet_ChasesAway_Groudon);
     LoadCompressedSpriteSheet(&sSpriteSheet_ChasesAway_GroudonTail);
     LoadCompressedSpriteSheet(&sSpriteSheet_ChasesAway_Kyogre);
@@ -2699,7 +2697,7 @@ static void Task_RayChasesAwayAnim(u8 taskId)
     ClearGpuRegBits(REG_OFFSET_DISPCNT, DISPCNT_BG2_ON);
     SetGpuReg(REG_OFFSET_BLDCNT, BLDCNT_TGT1_BG0 | BLDCNT_TGT2_BG1 | BLDCNT_EFFECT_BLEND);
     SetGpuReg(REG_OFFSET_BLDALPHA, BLDALPHA_BLEND(9, 14));
-    BlendPalettes(PALETTES_ALL, 0x10, RGB_BLACK);
+    BlendPalettes(PALETTES_ALL, 0x10, 0);
     SetVBlankCallback(VBlankCB_RayquazaScene);
     tState = 0;
     tTimer = 0;
@@ -2904,14 +2902,14 @@ static void SpriteCB_ChasesAway_DuoRingPush(struct Sprite *sprite)
     {
         if (!sprite->sIsKyogre)
         {
-            sprite->x -= sprite->sSpeed;
-            gSprites[sprite->sBodyPartSpriteId1].x -= sprite->sSpeed;
+            sprite->pos1.x -= sprite->sSpeed;
+            gSprites[sprite->sBodyPartSpriteId1].pos1.x -= sprite->sSpeed;
         }
         else
         {
-            sprite->x += sprite->sSpeed;
-            gSprites[sprite->sBodyPartSpriteId1].x += sprite->sSpeed;
-            gSprites[sprite->sBodyPartSpriteId2].x += sprite->sSpeed;
+            sprite->pos1.x += sprite->sSpeed;
+            gSprites[sprite->sBodyPartSpriteId1].pos1.x += sprite->sSpeed;
+            gSprites[sprite->sBodyPartSpriteId2].pos1.x += sprite->sSpeed;
         }
 
         sprite->sDecel++;
@@ -2951,18 +2949,18 @@ static void SpriteCB_ChasesAway_GroudonLeave(struct Sprite *sprite)
     case 2:
         if (sprite->animDelayCounter % 12 == 0)
         {
-            sprite->x -= 2;
-            gSprites[sprite->data[0]].x -=2;
+            sprite->pos1.x -= 2;
+            gSprites[sprite->data[0]].pos1.x -=2;
         }
-        gSprites[sprite->data[0]].y2 = 0;
+        gSprites[sprite->data[0]].pos2.y = 0;
         break;
     case 1:
     case 3:
-        gSprites[sprite->data[0]].y2 = -2;
+        gSprites[sprite->data[0]].pos2.y = -2;
         if ((sprite->animDelayCounter & 15) == 0)
         {
-            sprite->y++;
-            gSprites[sprite->data[0]].y++;
+            sprite->pos1.y++;
+            gSprites[sprite->data[0]].pos1.y++;
         }
         break;
     }
@@ -2984,10 +2982,10 @@ static void SpriteCB_ChasesAway_KyogreLeave(struct Sprite *sprite)
 {
     if ((sprite->data[4] & 3) == 0)
     {
-        if (sprite->x2 == 1)
-            sprite->x2 = -1;
+        if (sprite->pos2.x == 1)
+            sprite->pos2.x = -1;
         else
-            sprite->x2 = 1;
+            sprite->pos2.x = 1;
     }
     if (sprite->data[5] == 128)
     {
@@ -3000,10 +2998,10 @@ static void SpriteCB_ChasesAway_KyogreLeave(struct Sprite *sprite)
     }
     if (sprite->data[5] > 127)
     {
-        if (sprite->y2 != 32)
+        if (sprite->pos2.y != 32)
         {
             sprite->data[6]++;
-            sprite->y2 = sprite->data[6] >> 4;
+            sprite->pos2.y = sprite->data[6] >> 4;
         }
     }
     else
@@ -3031,8 +3029,8 @@ static void SpriteCB_ChasesAway_Rayquaza(struct Sprite *sprite)
     s16 frame = sprite->sTimer;
     if (frame <= 64)
     {
-        sprite->y2 += 2;
-        gSprites[sprite->sTailSpriteId].y2 += 2;
+        sprite->pos2.y += 2;
+        gSprites[sprite->sTailSpriteId].pos2.y += 2;
         if (sprite->sTimer == 64)
         {
             ChasesAway_SetRayquazaAnim(sprite, 1, 0, -48);
@@ -3064,9 +3062,9 @@ static void SpriteCB_ChasesAway_Rayquaza(struct Sprite *sprite)
     {
         SpriteCB_ChasesAway_RayquazaFloat(sprite);
         ChasesAway_SetRayquazaAnim(sprite, 3, 48, 16);
-        sprite->x2 = 1;
-        gSprites[sprite->sTailSpriteId].x2 = 1;
-        PlayCry_Normal(SPECIES_RAYQUAZA, 0);
+        sprite->pos2.x = 1;
+        gSprites[sprite->sTailSpriteId].pos2.x = 1;
+        PlayCry1(SPECIES_RAYQUAZA, 0);
         CreateTask(Task_ChasesAway_AnimateRing, 0);
     }
     else
@@ -3074,8 +3072,8 @@ static void SpriteCB_ChasesAway_Rayquaza(struct Sprite *sprite)
         switch (frame)
         {
         case 376:
-            sprite->x2 = 0;
-            gSprites[sprite->sTailSpriteId].x2 = 0;
+            sprite->pos2.x = 0;
+            gSprites[sprite->sTailSpriteId].pos2.x = 0;
             SpriteCB_ChasesAway_RayquazaFloat(sprite);
             ChasesAway_SetRayquazaAnim(sprite, 2, 48, 16);
             sprite->callback = SpriteCB_ChasesAway_RayquazaFloat;
@@ -3088,8 +3086,8 @@ static void SpriteCB_ChasesAway_Rayquaza(struct Sprite *sprite)
 
     if (sprite->sTimer > 328 && (sprite->sTimer & 1) == 0)
     {
-        sprite->x2 *= -1;
-        gSprites[sprite->sTailSpriteId].x2 = sprite->x2;
+        sprite->pos2.x *= -1;
+        gSprites[sprite->sTailSpriteId].pos2.x = sprite->pos2.x;
     }
 
     sprite->sTimer++;
@@ -3100,8 +3098,8 @@ static void SpriteCB_ChasesAway_RayquazaFloat(struct Sprite *body)
     struct Sprite *tail = &gSprites[body->sTailSpriteId];
     if (!(body->sFloatTimer & tail->sTailFloatDelay))
     {
-        body->y2 += body->sYOffset;
-        gSprites[body->sTailSpriteId].y2 += body->sYOffset; // why access gSprites again? tail->y2 would be sufficient
+        body->pos2.y += body->sYOffset;
+        gSprites[body->sTailSpriteId].pos2.y += body->sYOffset; // why access gSprites again? tail->pos2.y would be sufficient
         body->sYOffset += body->sYOffsetDir;
         if (body->sYOffset >= tail->sTailFloatPeak || body->sYOffset <= -tail->sTailFloatPeak)
         {
@@ -3121,11 +3119,11 @@ static void ChasesAway_SetRayquazaAnim(struct Sprite *body, u8 animNum, s16 x, s
 {
     struct Sprite *tail = &gSprites[body->sTailSpriteId];
 
-    tail->x = body->x + x;
-    tail->y = body->y + y;
+    tail->pos1.x = body->pos1.x + x;
+    tail->pos1.y = body->pos1.y + y;
 
-    tail->x2 = body->x2;
-    tail->y2 = body->y2;
+    tail->pos2.x = body->pos2.x;
+    tail->pos2.y = body->pos2.y;
 
     StartSpriteAnim(body, animNum);
     StartSpriteAnim(tail, animNum);

@@ -1,7 +1,11 @@
 #ifndef GUARD_POKEBLOCK_H
 #define GUARD_POKEBLOCK_H
 
-#define TAG_POKEBLOCK       14818
+#include "constants/berry.h"
+#include "constants/pokemon.h"
+
+#define GFX_TAG_POKEBLOCK       14818
+#define GFX_TAG_POKEBLOCK_CASE  14800
 
 enum
 {
@@ -48,7 +52,7 @@ extern s16 gPokeblockGain;
 void ChooseMonToGivePokeblock(struct Pokeblock *pokeblock, void (*callback)(void));
 
 // pokeblock feed
-void PreparePokeblockFeedScene(void);
+void CB2_PreparePokeblockFeedScene(void);
 
 // pokeblock
 extern const s8 gPokeblockFlavorCompatibilityTable[NUM_NATURES * FLAVOR_COUNT];

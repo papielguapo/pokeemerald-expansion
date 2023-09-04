@@ -14,14 +14,14 @@
   "battle_scene": "MAP_BATTLE_SCENE_NORMAL",
   "connections": [
     {
-      "map": "MAP_OLDALE_TOWN",
+      "direction": "up",
       "offset": 0,
-      "direction": "up"
+      "map": "MAP_OLDALE_TOWN"
     },
     {
-      "map": "MAP_LITTLEROOT_TOWN",
+      "direction": "down",
       "offset": 0,
-      "direction": "down"
+      "map": "MAP_LITTLEROOT_TOWN"
     }
   ],
   "object_events": [
@@ -186,6 +186,15 @@
       "var": "VAR_ROUTE101_STATE",
       "var_value": "2",
       "script": "Route101_EventScript_PreventExitNorth"
+    },
+    {
+      "type": "trigger",
+      "x": 6,
+      "y": 14,
+      "elevation": 3,
+      "var": "VAR_ROUTE101_STATE",
+      "var_value": "2",
+      "script": "Route101_EventScript_PreventExitNorthWest"
     }
   ],
   "bg_events": [

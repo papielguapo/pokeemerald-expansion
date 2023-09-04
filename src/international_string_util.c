@@ -34,32 +34,32 @@ int GetStringWidthDifference(int fontId, const u8 *str, int totalWidth, int lett
         return 0;
 }
 
-int GetMaxWidthInMenuTable(const struct MenuAction *actions, int numActions)
+int GetMaxWidthInMenuTable(const struct MenuAction *str, int arg1)
 {
-    int i, maxWidth;
+    int i, var;
 
-    for (maxWidth = 0, i = 0; i < numActions; i++)
+    for (var = 0, i = 0; i < arg1; i++)
     {
-        int stringWidth = GetStringWidth(FONT_NORMAL, actions[i].text, 0);
-        if (stringWidth > maxWidth)
-            maxWidth = stringWidth;
+        int stringWidth = GetStringWidth(1, str[i].text, 0);
+        if (stringWidth > var)
+            var = stringWidth;
     }
 
-    return ConvertPixelWidthToTileWidth(maxWidth);
+    return ConvertPixelWidthToTileWidth(var);
 }
 
-int GetMaxWidthInSubsetOfMenuTable(const struct MenuAction *actions, const u8 *actionIds, int numActions)
+int sub_81DB3D8(const struct MenuAction *str, const u8* arg1, int arg2)
 {
-    int i, maxWidth;
+    int i, var;
 
-    for (maxWidth = 0, i = 0; i < numActions; i++)
+    for (var = 0, i = 0; i < arg2; i++)
     {
-        int stringWidth = GetStringWidth(FONT_NORMAL, actions[actionIds[i]].text, 0);
-        if (stringWidth > maxWidth)
-            maxWidth = stringWidth;
+        int stringWidth = GetStringWidth(1, str[arg1[i]].text, 0);
+        if (stringWidth > var)
+            var = stringWidth;
     }
 
-    return ConvertPixelWidthToTileWidth(maxWidth);
+    return ConvertPixelWidthToTileWidth(var);
 }
 
 int Intl_GetListMenuWidth(const struct ListMenuTemplate *listMenu)
@@ -93,29 +93,32 @@ void CopyMonCategoryText(int dexNum, u8 *dest)
     StringCopy(str + 1, gText_Pokemon);
 }
 
-u8 *GetStringClearToWidth(u8 *dest, int fontId, const u8 *str, int totalStringWidth)
+u8 *sub_81DB494(u8 *str, int fontId, const u8 *str2, int totalStringWidth)
 {
     u8 *buffer;
     int width;
     int clearWidth;
 
-    if (str)
+    if (str2)
     {
-        buffer = StringCopy(dest, str);
-        width = GetStringWidth(fontId, str, 0);
+        buffer = StringCopy(str, str2);
+        width = GetStringWidth(fontId, str2, 0);
     }
     else
     {
-        buffer = dest;
+        buffer = str;
         width = 0;
     }
 
     clearWidth = totalStringWidth - width;
     if (clearWidth > 0)
     {
-        *(buffer++) = EXT_CTRL_CODE_BEGIN;
-        *(buffer++) = EXT_CTRL_CODE_CLEAR;
-        *(buffer++) = clearWidth;
+        *buffer = EXT_CTRL_CODE_BEGIN;
+        buffer++;
+        *buffer = EXT_CTRL_CODE_CLEAR;
+        buffer++;
+        *buffer = clearWidth;
+        buffer++;
         *buffer = EOS;
     }
 
@@ -133,7 +136,7 @@ void PadNameString(u8 *dest, u8 padChar)
         while (length < PLAYER_NAME_LENGTH - 1)
         {
             dest[length] = EXT_CTRL_CODE_BEGIN;
-            dest[length + 1] = EXT_CTRL_CODE_RESET_FONT;
+            dest[length + 1] = EXT_CTRL_CODE_RESET_SIZE;
             length += 2;
         }
     }
@@ -182,7 +185,7 @@ void ConvertInternationalPlayerNameStripChar(u8 *str, u8 removeChar)
     }
 }
 
-void ConvertInternationalContestantName(u8 *str)
+void sub_81DB5AC(u8 *str)
 {
     if (*str++ == EXT_CTRL_CODE_BEGIN && *str++ == EXT_CTRL_CODE_JPN)
     {
@@ -206,20 +209,18 @@ void TVShowConvertInternationalString(u8 *dest, const u8 *src, int language)
     ConvertInternationalString(dest, language);
 }
 
-// It's impossible to distinguish between Latin languages just from a string alone, so the function defaults to LANGUAGE_ENGLISH. This is the case in all of the versions of the game.
-int GetNicknameLanguage(u8 *str)
+int sub_81DB604(u8 *str)
 {
     if (str[0] == EXT_CTRL_CODE_BEGIN && str[1] == EXT_CTRL_CODE_JPN)
         return LANGUAGE_JAPANESE;
     else
-        return LANGUAGE_ENGLISH;
+        return GAME_LANGUAGE;
 }
 
-// Used by Pokénav's Match Call to erase the previous trainer's flavor text when switching between their info pages.
-void FillWindowTilesByRow(int windowId, int columnStart, int rowStart, int numFillTiles, int numRows)
+void sub_81DB620(int windowId, int columnStart, int rowStart, int numFillTiles, int numRows)
 {
     u8 *windowTileData;
-    int fillSize, windowRowSize, i;
+    int fillSize, windowRowSize, rowsToFill;
     struct Window *window = &gWindows[windowId];
 
     fillSize = numFillTiles * TILE_SIZE_4BPP;
@@ -227,10 +228,12 @@ void FillWindowTilesByRow(int windowId, int columnStart, int rowStart, int numFi
     windowTileData = window->tileData + (rowStart * windowRowSize) + (columnStart * TILE_SIZE_4BPP);
     if (numRows > 0)
     {
-        for (i = numRows; i != 0; i--)
+        rowsToFill = numRows;
+        while (rowsToFill)
         {
             CpuFastFill8(0x11, windowTileData, fillSize);
             windowTileData += windowRowSize;
+            rowsToFill--;
         }
     }
 }

@@ -14,7 +14,7 @@
 	.byte 0x02
 	.4byte \template
 	.if \anim_battler == ANIM_TARGET
-	.byte ANIMSPRITE_IS_TARGET | (\subpriority_offset & 0x7F)
+	.byte 0x80 | (\subpriority_offset & 0x7F)
 	.else
 	.byte (\subpriority_offset & 0x7F)
 	.endif
@@ -34,20 +34,20 @@
 .Lcreatetask_\@_2:
 	.endm
 
-	.macro delay frames:req
+	.macro delay param0:req
 	.byte 0x4
-	.byte \frames
+	.byte \param0
 	.endm
 
 	.macro waitforvisualfinish
 	.byte 0x5
 	.endm
 
-	.macro nop
+	.macro hang1
 	.byte 0x6
 	.endm
 
-	.macro nop2
+	.macro hang2
 	.byte 0x7
 	.endm
 
@@ -79,30 +79,30 @@
 	.byte 0xd
 	.endm
 
-	.macro call ptr:req
+	.macro call param0:req
 	.byte 0xe
-	.4byte \ptr
+	.4byte \param0
 	.endm
 
 	.macro return
 	.byte 0xf
 	.endm
 
-	.macro setarg argId:req, value:req
+	.macro setarg param0:req, param1:req
 	.byte 0x10
-	.byte \argId
-	.2byte \value
+	.byte \param0
+	.2byte \param1
 	.endm
 
-	.macro choosetwoturnanim ptr1:req, ptr2:req
+	.macro choosetwoturnanim param0:req, param1:req
 	.byte 0x11
-	.4byte \ptr1
-	.4byte \ptr2
+	.4byte \param0
+	.4byte \param1
 	.endm
 
-	.macro jumpifmoveturn value:req, ptr:req
+	.macro jumpifmoveturn param0:req, ptr:req
 	.byte 0x12
-	.byte \value
+	.byte \param0
 	.4byte \ptr
 	.endm
 
@@ -144,13 +144,13 @@
 	.byte \pan
 	.endm
 
-	.macro panse se:req, currentPan:req, targetPan:req, incrementPan:req, delay:req
+	.macro panse_1B se:req, param1:req, param2:req, param3:req, param4:req
 	.byte 0x1b
 	.2byte \se
-	.byte \currentPan
-	.byte \targetPan
-	.byte \incrementPan
-	.byte \delay
+	.byte \param1
+	.byte \param2
+	.byte \param3
+	.byte \param4
 	.endm
 
 	.macro loopsewithpan se:req, pan:req, wait:req, times:req
@@ -168,9 +168,9 @@
 	.byte \wait
 	.endm
 
-	.macro setbldcnt bldcnt:req
+	.macro setbldcnt param0:req
 	.byte 0x1e
-	.2byte \bldcnt
+	.2byte \param0
 	.endm
 
 	.macro createsoundtask addr:req, argv:vararg
@@ -186,19 +186,19 @@
 	.byte 0x20
 	.endm
 
-	.macro jumpargeq argId:req, value:req, ptr:req
+	.macro jumpargeq param0:req, param1:req, ptr:req
 	.byte 0x21
-	.byte \argId
-	.2byte \value
+	.byte \param0
+	.2byte \param1
 	.4byte \ptr
 	.endm
 
-	.macro monbg_static battler:req
+	.macro monbg_22 battler:req
 	.byte 0x22
 	.byte \battler
 	.endm
 
-	.macro clearmonbg_static battler:req
+	.macro clearmonbg_23 battler:req
 	.byte 0x23
 	.byte \battler
 	.endm
@@ -208,41 +208,41 @@
 	.4byte \ptr
 	.endm
 
-	.macro fadetobgfromset bgOpponent:req, bgPlayer:req, bgContest:req
+	.macro fadetobgfromset param0:req, param1:req, param2:req
 	.byte 0x25
-	.byte \bgOpponent
-	.byte \bgPlayer
-	.byte \bgContest
+	.byte \param0
+	.byte \param1
+	.byte \param2
 	.endm
 
-	.macro panse_adjustnone se:req, currentPan:req, targetPan:req, incrementPan:req, delay:req
+	.macro panse_26 se:req, param1:req, param2:req, param3:req, param4:req
 	.byte 0x26
 	.2byte \se
-	.byte \currentPan
-	.byte \targetPan
-	.byte \incrementPan
-	.byte \delay
+	.byte \param1
+	.byte \param2
+	.byte \param3
+	.byte \param4
 	.endm
 
-	.macro panse_adjustall se:req, currentPan:req, targetPan:req, incrementPan:req, delay:req
+	.macro panse_27 se:req, param1:req, param2:req, param3:req, param4:req
 	.byte 0x27
 	.2byte \se
-	.byte \currentPan
-	.byte \targetPan
-	.byte \incrementPan
-	.byte \delay
+	.byte \param1
+	.byte \param2
+	.byte \param3
+	.byte \param4
 	.endm
 
-	.macro splitbgprio battler:req
+	.macro monbgprio_28 battler:req
 	.byte 0x28
 	.byte \battler
 	.endm
 
-	.macro splitbgprio_all
+	.macro monbgprio_29
 	.byte 0x29
 	.endm
 
-	.macro splitbgprio_foes battler:req
+	.macro monbgprio_2A battler:req
 	.byte 0x2a
 	.byte \battler
 	.endm
@@ -257,12 +257,12 @@
 	.byte \battler
 	.endm
 
-	.macro teamattack_moveback battler:req
+	.macro doublebattle_2D battler:req
 	.byte 0x2d
 	.byte \battler
 	.endm
 
-	.macro teamattack_movefwd battler:req
+	.macro doublebattle_2E battler:req
 	.byte 0x2e
 	.byte \battler
 	.endm
@@ -270,65 +270,16 @@
 	.macro stopsound
 	.byte 0x2f
 	.endm
-
-	@ same as createvisualtask except takes in battlerargindex, which is the battle anim arg index of the battler to loop through
-	.macro createvisualtaskontargets addr:req, priority:req, battlerargindex:req, argv:vararg
-	.byte 0x30
-	.4byte \addr
-	.byte \priority
-	.byte \battlerargindex
-	.byte (.Lcreatetask_\@_2 - .Lcreatetask_\@_1) / 2	@ num_args
-.Lcreatetask_\@_1:
-	.2byte \argv
-.Lcreatetask_\@_2:
-	.endm
-
-	@ same as createsprite except takes in battlerargindex, which is the battle anim arg index of the battler to loop through
-	.macro createspriteontargets template:req, anim_battler:req, subpriority_offset:req, battlerargindex:req, argv:vararg
-	.byte 0x31
-	.4byte \template
-	.if \anim_battler == ANIM_TARGET
-	.byte 0x80 | (\subpriority_offset & 0x7F)
-	.else
-	.byte (\subpriority_offset & 0x7F)
-	.endif
-	.byte \battlerargindex
-	.byte (.Lsprite_\@_2 - .Lsprite_\@_1) / 2
-.Lsprite_\@_1:
-	.2byte \argv
-.Lsprite_\@_2:
-	.endm
-
-	@ does not overwrite gBattleAnimArgs[battlerargindex], some sprite templates are too dependent on the value (e.g. heal block)
-	.macro createspriteontargets_onpos template:req, anim_battler:req, subpriority_offset:req, battlerargindex:req, argv:vararg
-	.byte 0x32
-	.4byte \template
-	.if \anim_battler == ANIM_TARGET
-	.byte 0x80 | (\subpriority_offset & 0x7F)
-	.else
-	.byte (\subpriority_offset & 0x7F)
-	.endif
-	.byte \battlerargindex
-	.byte (.Lsprite_\@_2 - .Lsprite_\@_1) / 2
-.Lsprite_\@_1:
-	.2byte \argv
-.Lsprite_\@_2:
-	.endm
-
+	
 @ useful macros
 	.macro jumpreteq value:req, ptr:req
 	jumpargeq ARG_RET_ID, \value, \ptr
 	.endm
-
+	
 	.macro jumprettrue ptr:req
 	jumpreteq TRUE, \ptr
 	.endm
-
+	
 	.macro jumpretfalse ptr:req
 	jumpreteq FALSE, \ptr
-	.endm
-
-	.macro jumpifdoublebattle ptr:req
-	createvisualtask AnimTask_IsDoubleBattle, 0
-	jumprettrue \ptr
 	.endm

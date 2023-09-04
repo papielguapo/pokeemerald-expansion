@@ -105,24 +105,6 @@ enum {
     CHAT_EXIT_DISBANDED,
 };
 
-enum {
-    GFXTAG_KEYBOARD_CURSOR,
-    GFXTAG_TEXT_ENTRY_ARROW,
-    GFXTAG_TEXT_ENTRY_CURSOR,
-    GFXTAG_RBUTTON_ICON,
-    GFXTAG_RBUTTON_LABELS,
-};
-
-// Shared by all above
-#define PALTAG_INTERFACE 0
-
-enum {
-    WIN_CHAT_HISTORY,
-    WIN_TEXT_ENTRY,
-    WIN_KEYBOARD,
-    WIN_SWAP_MENU,
-};
-
 struct UnionRoomChat
 {
     u32 filler1;
@@ -141,7 +123,7 @@ struct UnionRoomChat
     u8 lastBufferCursorPos;
     u8 bufferCursorPos;
     u8 receivedPlayerIndex;
-    u8 exitType; // CHAT_EXIT_*
+    u8 exitType;
     bool8 changedRegisteredTexts;
     u8 afterSaveTimer;
     u8 messageEntryBuffer[2 * MAX_MESSAGE_LENGTH + 1];
@@ -173,7 +155,8 @@ struct UnionRoomChatDisplay
     u8 bg1Buffer[BG_SCREEN_SIZE];
     u8 bg3Buffer[BG_SCREEN_SIZE];
     u8 bg2Buffer[BG_SCREEN_SIZE];
-    u8 textEntryTiles[TILE_SIZE_4BPP * 2];
+    u8 unk2128[0x20];
+    u8 unk2148[0x20];
 };
 
 struct UnionRoomChatSprites
@@ -253,11 +236,11 @@ static void FreeSprites(void);
 static void ResetGpuBgState(void);
 static void SetBgTilemapBuffers(void);
 static void ClearBg0(void);
-static void LoadKeyboardWindowGfx(void);
+static void LoadChatWindowBorderGfx(void);
 static void LoadChatWindowGfx(void);
-static void LoadChatUnkPalette(void);
+static void sub_8020680(void);
 static void LoadChatMessagesWindow(void);
-static void DrawKeyboardWindow(void);
+static void LoadKeyboardWindow(void);
 static void LoadKeyboardSwapWindow(void);
 static void LoadTextEntryWindow(void);
 static void CreateKeyboardCursorSprite(void);
@@ -266,9 +249,9 @@ static void CreateRButtonSprites(void);
 static void ShowKeyboardSwapMenu(void);
 static void HideKeyboardSwapMenu(void);
 static void SetKeyboardCursorInvisibility(bool32);
-static bool32 SlideKeyboardPageOut(void);
+static bool32 sub_8020320(void);
 static void PrintCurrentKeyboardPage(void);
-static bool32 SlideKeyboardPageIn(void);
+static bool32 sub_8020368(void);
 static void MoveKeyboardCursor(void);
 static void UpdateRButtonLabel(void);
 static void AddStdMessageWindow(int, u16);
@@ -283,8 +266,8 @@ static void SetRegisteredTextPalette(bool32);
 static void PrintChatMessage(u16, u8 *, u8);
 static void StartKeyboardCursorAnim(void);
 static bool32 TryKeyboardCursorReopen(void);
-static void UpdateSlidingKeyboard(s16);
-static void FinishSlidingKeyboard(s16);
+static void sub_80207C0(s16);
+static void sub_8020818(s16);
 static bool32 Display_Dummy(u8 *);
 static bool32 Display_LoadGfx(u8 *state);
 static bool32 Display_ShowKeyboardSwapMenu(u8 *state);
@@ -327,15 +310,15 @@ static void (*const sChatMainFunctions[])(void) = {
     [CHAT_FUNC_SAVE_AND_EXIT] = Chat_SaveAndExit
 };
 
-static const u8 sKeyboardPageMaxRow[UNION_ROOM_KB_PAGE_COUNT] =
+static const u8 sKeyboardPageMaxRow[UNION_ROOM_KB_PAGE_COUNT] = 
 {
-    [UNION_ROOM_KB_PAGE_UPPER]    = 9,
-    [UNION_ROOM_KB_PAGE_LOWER]    = 9,
-    [UNION_ROOM_KB_PAGE_EMOJI]    = 9,
+    [UNION_ROOM_KB_PAGE_UPPER]    = 9, 
+    [UNION_ROOM_KB_PAGE_LOWER]    = 9, 
+    [UNION_ROOM_KB_PAGE_EMOJI]    = 9, 
     [UNION_ROOM_KB_PAGE_REGISTER] = 9
 };
 
-const u8 gCaseToggleTable[256] = {
+static const u8 sCaseToggleTable[256] = {
     [CHAR_A] = CHAR_a,
     [CHAR_B] = CHAR_b,
     [CHAR_C] = CHAR_c,
@@ -464,10 +447,10 @@ const u8 gCaseToggleTable[256] = {
     [CHAR_LEFT_PAREN] = CHAR_LEFT_PAREN,
     [CHAR_RIGHT_PAREN] = CHAR_RIGHT_PAREN,
     [CHAR_AMPERSAND] = CHAR_AMPERSAND,
-    [CHAR_DBL_QUOTE_LEFT] = CHAR_DBL_QUOTE_LEFT,
-    [CHAR_DBL_QUOTE_RIGHT] = CHAR_DBL_QUOTE_RIGHT,
-    [CHAR_SGL_QUOTE_LEFT] = CHAR_SGL_QUOTE_LEFT,
-    [CHAR_SGL_QUOTE_RIGHT] = CHAR_SGL_QUOTE_RIGHT,
+    [CHAR_DBL_QUOT_LEFT] = CHAR_DBL_QUOT_LEFT,
+    [CHAR_DBL_QUOT_RIGHT] = CHAR_DBL_QUOT_RIGHT,
+    [CHAR_SGL_QUOT_LEFT] = CHAR_SGL_QUOT_LEFT,
+    [CHAR_SGL_QUOT_RIGHT] = CHAR_SGL_QUOT_RIGHT,
     [CHAR_MASCULINE_ORDINAL] = CHAR_MASCULINE_ORDINAL,
     [CHAR_FEMININE_ORDINAL] = CHAR_FEMININE_ORDINAL,
     [CHAR_BULLET] = CHAR_BULLET,
@@ -483,51 +466,51 @@ const u8 gCaseToggleTable[256] = {
 };
 
 // Excludes UNION_ROOM_KB_PAGE_REGISTER, the text for which is chosen by the player
-static const u8 *const sUnionRoomKeyboardText[UNION_ROOM_KB_PAGE_COUNT - 1][UNION_ROOM_KB_ROW_COUNT] =
+static const u8 *const sUnionRoomKeyboardText[UNION_ROOM_KB_PAGE_COUNT - 1][UNION_ROOM_KB_ROW_COUNT] = 
 {
-    [UNION_ROOM_KB_PAGE_UPPER] =
+    [UNION_ROOM_KB_PAGE_UPPER] = 
     {
-        gText_UnionRoomChatKeyboard_ABCDE,
-        gText_UnionRoomChatKeyboard_FGHIJ,
-        gText_UnionRoomChatKeyboard_KLMNO,
-        gText_UnionRoomChatKeyboard_PQRST,
-        gText_UnionRoomChatKeyboard_UVWXY,
-        gText_UnionRoomChatKeyboard_Z,
-        gText_UnionRoomChatKeyboard_01234Upper,
-        gText_UnionRoomChatKeyboard_56789Upper,
-        gText_UnionRoomChatKeyboard_PunctuationUpper,
+        gText_UnionRoomChatKeyboard_ABCDE, 
+        gText_UnionRoomChatKeyboard_FGHIJ, 
+        gText_UnionRoomChatKeyboard_KLMNO, 
+        gText_UnionRoomChatKeyboard_PQRST, 
+        gText_UnionRoomChatKeyboard_UVWXY, 
+        gText_UnionRoomChatKeyboard_Z, 
+        gText_UnionRoomChatKeyboard_01234Upper, 
+        gText_UnionRoomChatKeyboard_56789Upper, 
+        gText_UnionRoomChatKeyboard_PunctuationUpper, 
         gText_UnionRoomChatKeyboard_SymbolsUpper
     },
-    [UNION_ROOM_KB_PAGE_LOWER] =
+    [UNION_ROOM_KB_PAGE_LOWER] = 
     {
-        gText_UnionRoomChatKeyboard_abcde,
-        gText_UnionRoomChatKeyboard_fghij,
-        gText_UnionRoomChatKeyboard_klmno,
-        gText_UnionRoomChatKeyboard_pqrst,
-        gText_UnionRoomChatKeyboard_uvwxy,
-        gText_UnionRoomChatKeyboard_z,
-        gText_UnionRoomChatKeyboard_01234Lower,
-        gText_UnionRoomChatKeyboard_56789Lower,
-        gText_UnionRoomChatKeyboard_PunctuationLower,
+        gText_UnionRoomChatKeyboard_abcde, 
+        gText_UnionRoomChatKeyboard_fghij, 
+        gText_UnionRoomChatKeyboard_klmno, 
+        gText_UnionRoomChatKeyboard_pqrst, 
+        gText_UnionRoomChatKeyboard_uvwxy, 
+        gText_UnionRoomChatKeyboard_z, 
+        gText_UnionRoomChatKeyboard_01234Lower, 
+        gText_UnionRoomChatKeyboard_56789Lower, 
+        gText_UnionRoomChatKeyboard_PunctuationLower, 
         gText_UnionRoomChatKeyboard_SymbolsLower
     },
-    [UNION_ROOM_KB_PAGE_EMOJI] =
+    [UNION_ROOM_KB_PAGE_EMOJI] = 
     {
-        gText_UnionRoomChatKeyboard_Emoji1,
-        gText_UnionRoomChatKeyboard_Emoji2,
-        gText_UnionRoomChatKeyboard_Emoji3,
-        gText_UnionRoomChatKeyboard_Emoji4,
-        gText_UnionRoomChatKeyboard_Emoji5,
-        gText_UnionRoomChatKeyboard_Emoji6,
-        gText_UnionRoomChatKeyboard_Emoji7,
-        gText_UnionRoomChatKeyboard_Emoji8,
-        gText_UnionRoomChatKeyboard_Emoji9,
+        gText_UnionRoomChatKeyboard_Emoji1, 
+        gText_UnionRoomChatKeyboard_Emoji2, 
+        gText_UnionRoomChatKeyboard_Emoji3, 
+        gText_UnionRoomChatKeyboard_Emoji4, 
+        gText_UnionRoomChatKeyboard_Emoji5, 
+        gText_UnionRoomChatKeyboard_Emoji6, 
+        gText_UnionRoomChatKeyboard_Emoji7, 
+        gText_UnionRoomChatKeyboard_Emoji8, 
+        gText_UnionRoomChatKeyboard_Emoji9, 
         gText_UnionRoomChatKeyboard_Emoji10
     }
 };
 
-static const u16 sUnusedPalette[] = INCBIN_U16("graphics/union_room_chat/unused.gbapal"); // Loaded but never apparently used
-static const u16 sChatMessagesWindow_Pal[] = INCBIN_U16("graphics/union_room_chat/chat_messages_window.gbapal");
+static const u16 sUnk_Palette1[] = INCBIN_U16("graphics/union_room_chat/unk_palette1.gbapal");
+static const u16 sUnk_Palette2[] = INCBIN_U16("graphics/union_room_chat/unk_palette2.gbapal");
 
 static const struct BgTemplate sBgTemplates[] = {
     {
@@ -566,40 +549,37 @@ static const struct BgTemplate sBgTemplates[] = {
 };
 
 static const struct WindowTemplate sWinTemplates[] = {
-    [WIN_CHAT_HISTORY] = {
-        .bg = 3,
-        .tilemapLeft = 8,
-        .tilemapTop = 1,
-        .width = 21,
-        .height = 19,
-        .paletteNum = 15,
+    {
+        .bg = 0x03,
+        .tilemapLeft = 0x08,
+        .tilemapTop = 0x01,
+        .width = 0x15,
+        .height = 0x13,
+        .paletteNum = 0x0f,
         .baseBlock = 0x0001,
-    },
-    [WIN_TEXT_ENTRY] = {
-        .bg = 1,
-        .tilemapLeft = 9,
-        .tilemapTop = 18,
-        .width = 15,
-        .height = 2,
-        .paletteNum = 12,
+    }, {
+        .bg = 0x01,
+        .tilemapLeft = 0x09,
+        .tilemapTop = 0x12,
+        .width = 0x0f,
+        .height = 0x02,
+        .paletteNum = 0x0c,
         .baseBlock = 0x007a,
-    },
-    [WIN_KEYBOARD] = {
-        .bg = 1,
-        .tilemapLeft = 0,
-        .tilemapTop = 2,
-        .width = 6,
-        .height = 15,
-        .paletteNum = 7,
+    }, {
+        .bg = 0x01,
+        .tilemapLeft = 0x00,
+        .tilemapTop = 0x02,
+        .width = 0x06,
+        .height = 0x0f,
+        .paletteNum = 0x07,
         .baseBlock = 0x0020,
-    },
-    [WIN_SWAP_MENU] = {
-        .bg = 0,
-        .tilemapLeft = 1,
-        .tilemapTop = 2,
-        .width = 7,
-        .height = 9,
-        .paletteNum = 14,
+    }, {
+        .bg = 0x00,
+        .tilemapLeft = 0x01,
+        .tilemapTop = 0x02,
+        .width = 0x07,
+        .height = 0x09,
+        .paletteNum = 0x0e,
         .baseBlock = 0x0013,
     }, DUMMY_WIN_TEMPLATE
 };
@@ -630,113 +610,113 @@ static const struct SubtaskInfo sDisplaySubtasks[] = {
 
 static const struct MessageWindowInfo sDisplayStdMessages[] = {
     [STDMESSAGE_QUIT_CHATTING] = {
-        .text = gText_QuitChatting,
-        .boxType = 1,
-        .x = 0,
-        .y = 1,
-        .letterSpacing = 0,
-        .lineSpacing = 0,
-        .hasPlaceholders = FALSE,
+        .text = gText_QuitChatting, 
+        .boxType = 1, 
+        .x = 0, 
+        .y = 1, 
+        .letterSpacing = 0, 
+        .lineSpacing = 0, 
+        .hasPlaceholders = FALSE, 
         .useWiderBox = FALSE
     },
     [STDMESSAGE_REGISTER_WHERE] = {
-        .text = gText_RegisterTextWhere,
-        .boxType = 1,
-        .x = 0,
-        .y = 1,
-        .letterSpacing = 0,
-        .lineSpacing = 0,
-        .hasPlaceholders = FALSE,
+        .text = gText_RegisterTextWhere, 
+        .boxType = 1, 
+        .x = 0, 
+        .y = 1, 
+        .letterSpacing = 0, 
+        .lineSpacing = 0, 
+        .hasPlaceholders = FALSE, 
         .useWiderBox = FALSE
     },
     [STDMESSAGE_REGISTER_HERE] = {
-        .text = gText_RegisterTextHere,
-        .boxType = 1,
-        .x = 0,
-        .y = 1,
-        .letterSpacing = 0,
-        .lineSpacing = 0,
-        .hasPlaceholders = FALSE,
+        .text = gText_RegisterTextHere, 
+        .boxType = 1, 
+        .x = 0, 
+        .y = 1, 
+        .letterSpacing = 0, 
+        .lineSpacing = 0, 
+        .hasPlaceholders = FALSE, 
         .useWiderBox = FALSE
     },
     [STDMESSAGE_INPUT_TEXT] = {
-        .text = gText_InputText,
-        .boxType = 1,
-        .x = 0,
-        .y = 1,
-        .letterSpacing = 0,
-        .lineSpacing = 0,
-        .hasPlaceholders = FALSE,
+        .text = gText_InputText, 
+        .boxType = 1, 
+        .x = 0, 
+        .y = 1, 
+        .letterSpacing = 0, 
+        .lineSpacing = 0, 
+        .hasPlaceholders = FALSE, 
         .useWiderBox = FALSE
     },
     [STDMESSAGE_EXITING_CHAT] = {
-        .text = gText_ExitingChat,
-        .boxType = 2,
-        .x = 0,
-        .y = 1,
-        .letterSpacing = 0,
-        .lineSpacing = 0,
-        .hasPlaceholders = FALSE,
+        .text = gText_ExitingChat, 
+        .boxType = 2, 
+        .x = 0, 
+        .y = 1, 
+        .letterSpacing = 0, 
+        .lineSpacing = 0, 
+        .hasPlaceholders = FALSE, 
         .useWiderBox = FALSE
     },
     [STDMESSAGE_LEADER_LEFT] = {
-        .text = gText_LeaderLeftEndingChat,
-        .boxType = 2,
-        .x = 0,
-        .y = 1,
-        .letterSpacing = 0,
-        .lineSpacing = 0,
-        .hasPlaceholders = TRUE,
+        .text = gText_LeaderLeftEndingChat, 
+        .boxType = 2, 
+        .x = 0, 
+        .y = 1, 
+        .letterSpacing = 0, 
+        .lineSpacing = 0, 
+        .hasPlaceholders = TRUE, 
         .useWiderBox = FALSE
     },
     [STDMESSAGE_ASK_SAVE] = {
-        .text = gText_RegisteredTextChangedOKToSave,
-        .boxType = 2,
-        .x = 0,
-        .y = 1,
-        .letterSpacing = 0,
-        .lineSpacing = 0,
-        .hasPlaceholders = FALSE,
+        .text = gText_RegisteredTextChangedOKToSave, 
+        .boxType = 2, 
+        .x = 0, 
+        .y = 1, 
+        .letterSpacing = 0, 
+        .lineSpacing = 0, 
+        .hasPlaceholders = FALSE, 
         .useWiderBox = TRUE
     },
     [STDMESSAGE_ASK_OVERWRITE] = {
-        .text = gText_AlreadySavedFile_Chat,
-        .boxType = 2,
-        .x = 0,
-        .y = 1,
-        .letterSpacing = 0,
-        .lineSpacing = 0,
-        .hasPlaceholders = FALSE,
+        .text = gText_AlreadySavedFile_Chat, 
+        .boxType = 2, 
+        .x = 0, 
+        .y = 1, 
+        .letterSpacing = 0, 
+        .lineSpacing = 0, 
+        .hasPlaceholders = FALSE, 
         .useWiderBox = TRUE
     },
     [STDMESSAGE_SAVING_NO_OFF] = {
-        .text = gText_SavingDontTurnOff_Chat,
-        .boxType = 2,
-        .x = 0,
-        .y = 1,
-        .letterSpacing = 0,
-        .lineSpacing = 0,
-        .hasPlaceholders = FALSE,
+        .text = gText_SavingDontTurnOff_Chat, 
+        .boxType = 2, 
+        .x = 0, 
+        .y = 1, 
+        .letterSpacing = 0, 
+        .lineSpacing = 0, 
+        .hasPlaceholders = FALSE, 
         .useWiderBox = TRUE
     },
     [STDMESSAGE_SAVED_THE_GAME] = {
-        .text = gText_PlayerSavedGame_Chat,
-        .boxType = 2,
-        .x = 0,
-        .y = 1,
-        .letterSpacing = 0,
-        .lineSpacing = 0,
-        .hasPlaceholders = TRUE,
+        .text = gText_PlayerSavedGame_Chat, 
+        .boxType = 2, 
+        .x = 0, 
+        .y = 1, 
+        .letterSpacing = 0, 
+        .lineSpacing = 0, 
+        .hasPlaceholders = TRUE, 
         .useWiderBox = TRUE
     },
     [STDMESSAGE_WARN_LEADER_LEAVE] = {
-        .text = gText_IfLeaderLeavesChatEnds,
-        .boxType = 2,
-        .x = 0,
-        .y = 1,
-        .letterSpacing = 0,
-        .lineSpacing = 0,
-        .hasPlaceholders = FALSE,
+        .text = gText_IfLeaderLeavesChatEnds, 
+        .boxType = 2, 
+        .x = 0, 
+        .y = 1, 
+        .letterSpacing = 0, 
+        .lineSpacing = 0, 
+        .hasPlaceholders = FALSE, 
         .useWiderBox = TRUE
     }
 };
@@ -758,15 +738,15 @@ static const u32 sTextEntryArrowTiles[] = INCBIN_U32("graphics/union_room_chat/t
 static const u32 sRButtonGfxTiles[] = INCBIN_U32("graphics/union_room_chat/r_button.4bpp.lz");
 
 static const struct CompressedSpriteSheet sSpriteSheets[] = {
-    {.data = sKeyboardCursorTiles,         .size = 0x1000, .tag = GFXTAG_KEYBOARD_CURSOR},
-    {.data = sTextEntryArrowTiles,         .size = 0x0040, .tag = GFXTAG_TEXT_ENTRY_ARROW},
-    {.data = sTextEntryCursorTiles,        .size = 0x0040, .tag = GFXTAG_TEXT_ENTRY_CURSOR},
-    {.data = sRButtonGfxTiles,             .size = 0x0080, .tag = GFXTAG_RBUTTON_ICON},
-    {.data = gUnionRoomChat_RButtonLabels, .size = 0x0400, .tag = GFXTAG_RBUTTON_LABELS}
+    {sKeyboardCursorTiles,         0x1000, 0},
+    {sTextEntryArrowTiles,         0x0040, 1},
+    {sTextEntryCursorTiles,        0x0040, 2},
+    {sRButtonGfxTiles,             0x0080, 3},
+    {gUnionRoomChat_RButtonLabels, 0x0400, 4}
 };
 
 static const struct SpritePalette sSpritePalette = {
-    .data = sUnionRoomChatInterfacePal, .tag = PALTAG_INTERFACE
+    sUnionRoomChatInterfacePal, 0
 };
 
 static const struct OamData sOam_KeyboardCursor = {
@@ -802,10 +782,9 @@ static const union AnimCmd *const sAnims_KeyboardCursor[] = {
     sAnim_KeyboardCursorWide_Closed
 };
 
-static const struct SpriteTemplate sSpriteTemplate_KeyboardCursor =
-{
-    .tileTag = GFXTAG_KEYBOARD_CURSOR,
-    .paletteTag = PALTAG_INTERFACE,
+static const struct SpriteTemplate sSpriteTemplate_KeyboardCursor = {
+    .tileTag = 0x0000,
+    .paletteTag = 0x0000,
     .oam = &sOam_KeyboardCursor,
     .anims = sAnims_KeyboardCursor,
     .images = NULL,
@@ -819,10 +798,9 @@ static const struct OamData sOam_TextEntrySprite = {
     .priority = 2
 };
 
-static const struct SpriteTemplate sSpriteTemplate_TextEntryCursor =
-{
-    .tileTag = GFXTAG_TEXT_ENTRY_CURSOR,
-    .paletteTag = PALTAG_INTERFACE,
+static const struct SpriteTemplate sSpriteTemplate_TextEntryCursor = {
+    .tileTag = 0x0002,
+    .paletteTag = 0x0000,
     .oam = &sOam_TextEntrySprite,
     .anims = gDummySpriteAnimTable,
     .images = NULL,
@@ -830,10 +808,9 @@ static const struct SpriteTemplate sSpriteTemplate_TextEntryCursor =
     .callback = SpriteCB_TextEntryCursor
 };
 
-static const struct SpriteTemplate sSpriteTemplate_TextEntryArrow =
-{
-    .tileTag = GFXTAG_TEXT_ENTRY_ARROW,
-    .paletteTag = PALTAG_INTERFACE,
+static const struct SpriteTemplate sSpriteTemplate_TextEntryArrow = {
+    .tileTag = 0x0001,
+    .paletteTag = 0x0000,
     .oam = &sOam_TextEntrySprite,
     .anims = gDummySpriteAnimTable,
     .images = NULL,
@@ -880,10 +857,9 @@ static const union AnimCmd *const sAnims_RButtonLabels[] = {
     sAnim_RegisterIcon
 };
 
-static const struct SpriteTemplate sSpriteTemplate_RButtonIcon =
-{
-    .tileTag = GFXTAG_RBUTTON_ICON,
-    .paletteTag = PALTAG_INTERFACE,
+static const struct SpriteTemplate sSpriteTemplate_RButtonIcon = {
+    .tileTag = 0x0003,
+    .paletteTag = 0x0000,
     .oam = &sOam_RButtonIcon,
     .anims = gDummySpriteAnimTable,
     .images = NULL,
@@ -891,10 +867,9 @@ static const struct SpriteTemplate sSpriteTemplate_RButtonIcon =
     .callback = SpriteCallbackDummy
 };
 
-static const struct SpriteTemplate sSpriteTemplate_RButtonLabels =
-{
-    .tileTag = GFXTAG_RBUTTON_LABELS,
-    .paletteTag = PALTAG_INTERFACE,
+static const struct SpriteTemplate sSpriteTemplate_RButtonLabels = {
+    .tileTag = 0x0004,
+    .paletteTag = 0x0000,
     .oam = &sOam_RButtonLabel,
     .anims = sAnims_RButtonLabels,
     .images = NULL,
@@ -904,7 +879,7 @@ static const struct SpriteTemplate sSpriteTemplate_RButtonLabels =
 
 void EnterUnionRoomChat(void)
 {
-    sChat = Alloc(sizeof(*sChat));
+    sChat = Alloc(sizeof(struct UnionRoomChat));
     InitUnionRoomChat(sChat);
     gKeyRepeatStartDelay = 20;
     SetVBlankCallback(NULL);
@@ -915,7 +890,7 @@ static void InitUnionRoomChat(struct UnionRoomChat *chat)
 {
     int i;
 
-    chat->funcId = CHAT_FUNC_JOIN;
+    chat->funcId = 0;
     chat->funcState = 0;
     chat->currentPage = 0;
     chat->currentCol = 0;
@@ -926,7 +901,7 @@ static void InitUnionRoomChat(struct UnionRoomChat *chat)
     chat->messageEntryBuffer[0] = EOS;
     chat->linkPlayerCount = GetLinkPlayerCount();
     chat->multiplayerId = GetMultiplayerId();
-    chat->exitType = CHAT_EXIT_NONE;
+    chat->exitType = 0;
     chat->changedRegisteredTexts = FALSE;
     PrepareSendBuffer_Null(chat->sendMessageBuffer);
     for (i = 0; i < UNION_ROOM_KB_ROW_COUNT; i++)
@@ -969,7 +944,7 @@ static void CB2_LoadInterface(void)
             sChat->handleInputTask = CreateTask(Task_HandlePlayerInput, 8);
             sChat->receiveMessagesTask = CreateTask(Task_ReceiveChatMessage, 7);
             LoadWirelessStatusIndicatorSpriteGfx();
-            CreateWirelessStatusIndicatorSprite(DISPLAY_WIDTH - 8, DISPLAY_HEIGHT - 10);
+            CreateWirelessStatusIndicatorSprite(232, 150);
         }
         break;
     }
@@ -994,8 +969,6 @@ static void CB2_UnionRoomChatMain(void)
 
 static void Task_HandlePlayerInput(u8 taskId)
 {
-    // If exitType is not CHAT_EXIT_NONE, begin exit function.
-    // Otherwise just call main function below.
     switch (sChat->exitType)
     {
     case CHAT_EXIT_ONLY_LEADER:
@@ -1024,7 +997,7 @@ static void Chat_Join(void)
         sChat->funcState++;
         // fall through
     case 1:
-        if (IsLinkTaskFinished() && !Rfu_IsPlayerExchangeActive())
+        if (IsLinkTaskFinished() && !sub_8011A9C())
         {
             if (SendBlock(0, sChat->sendMessageBuffer, sizeof(sChat->sendMessageBuffer)))
                 sChat->funcState++;
@@ -1053,7 +1026,7 @@ static void Chat_HandleInput(void)
         {
             SetChatFunction(CHAT_FUNC_SWITCH);
         }
-        else if (JOY_REPEAT(B_BUTTON))
+        else if (gMain.newAndRepeatedKeys & B_BUTTON)
         {
             if (sChat->bufferCursorPos)
             {
@@ -1083,7 +1056,7 @@ static void Chat_HandleInput(void)
             }
             else
             {
-                SetChatFunction(CHAT_FUNC_REGISTER);
+                SetChatFunction(5);
             }
         }
         else if (HandleDPadInput())
@@ -1180,7 +1153,7 @@ static void Chat_AskQuitChatting(void)
         input = ProcessMenuInput();
         switch (input)
         {
-        case MENU_B_PRESSED:
+        case -1:
         case 1:
             StartDisplaySubtask(CHATDISPLAY_FUNC_DESTROY_YESNO, 0);
             sChat->funcState = 3;
@@ -1219,13 +1192,13 @@ static void Chat_AskQuitChatting(void)
         input = ProcessMenuInput();
         switch (input)
         {
-        case MENU_B_PRESSED:
+        case -1:
         case 1:
             StartDisplaySubtask(CHATDISPLAY_FUNC_DESTROY_YESNO, 0);
             sChat->funcState = 3;
             break;
         case 0:
-            Rfu_StopPartnerSearch();
+            sub_80104B0();
             PrepareSendBuffer_Disband(sChat->sendMessageBuffer);
             sChat->funcState = 4;
             sChat->tryQuitAgainTimer = 0;
@@ -1233,7 +1206,7 @@ static void Chat_AskQuitChatting(void)
         }
         break;
     case 4:
-        if (IsLinkTaskFinished() && !Rfu_IsPlayerExchangeActive() && SendBlock(0, sChat->sendMessageBuffer, sizeof(sChat->sendMessageBuffer)))
+        if (IsLinkTaskFinished() && !sub_8011A9C() && SendBlock(0, sChat->sendMessageBuffer, sizeof(sChat->sendMessageBuffer)))
         {
             if (!sChat->multiplayerId)
                 sChat->funcState = 6;
@@ -1284,15 +1257,15 @@ static void Chat_Exit(void)
         }
         break;
     case 3:
-        if (IsLinkTaskFinished() && !Rfu_IsPlayerExchangeActive() && SendBlock(0, sChat->sendMessageBuffer, sizeof(sChat->sendMessageBuffer)))
+        if (IsLinkTaskFinished() && !sub_8011A9C() && SendBlock(0, sChat->sendMessageBuffer, sizeof(sChat->sendMessageBuffer)))
             sChat->funcState++;
         break;
     case 4:
-        if ((GetBlockReceivedStatus() & 1) && !Rfu_IsPlayerExchangeActive())
+        if ((GetBlockReceivedStatus() & 1) && !sub_8011A9C())
             sChat->funcState++;
         break;
     case 5:
-        if (IsLinkTaskFinished() && !Rfu_IsPlayerExchangeActive())
+        if (IsLinkTaskFinished() && !sub_8011A9C())
         {
             SetCloseLinkCallback();
             sChat->exitDelayTimer = 0;
@@ -1327,7 +1300,7 @@ static void Chat_Drop(void)
         }
         break;
     case 1:
-        if (!IsDisplaySubtaskActive(0) && IsLinkTaskFinished() && !Rfu_IsPlayerExchangeActive())
+        if (!IsDisplaySubtaskActive(0) && IsLinkTaskFinished() && !sub_8011A9C())
         {
             SetCloseLinkCallback();
             sChat->exitDelayTimer = 0;
@@ -1373,7 +1346,7 @@ static void Chat_Disbanded(void)
         }
         break;
     case 2:
-        if (IsDisplaySubtaskActive(0) != TRUE && IsLinkTaskFinished() && !Rfu_IsPlayerExchangeActive())
+        if (IsDisplaySubtaskActive(0) != TRUE && IsLinkTaskFinished() && !sub_8011A9C())
         {
             SetCloseLinkCallback();
             sChat->exitDelayTimer = 0;
@@ -1411,7 +1384,7 @@ static void Chat_SendMessage(void)
         sChat->funcState++;
         // fall through
     case 1:
-        if (IsLinkTaskFinished() == TRUE && !Rfu_IsPlayerExchangeActive() && SendBlock(0, sChat->sendMessageBuffer, sizeof(sChat->sendMessageBuffer)))
+        if (IsLinkTaskFinished() == TRUE && !sub_8011A9C() && SendBlock(0, sChat->sendMessageBuffer, sizeof(sChat->sendMessageBuffer)))
             sChat->funcState++;
         break;
     case 2:
@@ -1521,7 +1494,7 @@ static void Chat_SaveAndExit(void)
         input = ProcessMenuInput();
         switch (input)
         {
-        case MENU_B_PRESSED:
+        case -1:
         case 1:
             sChat->funcState = 12;
             break;
@@ -1546,7 +1519,7 @@ static void Chat_SaveAndExit(void)
         input = ProcessMenuInput();
         switch (input)
         {
-        case MENU_B_PRESSED:
+        case -1:
         case 1:
             sChat->funcState = 12;
             break;
@@ -1656,7 +1629,7 @@ static bool32 HandleDPadInput(void)
         return FALSE;
     } while (0);
 
-    return TRUE;
+    return TRUE;  
 }
 
 static void AppendTextToMessage(void)
@@ -1669,7 +1642,7 @@ static void AppendTextToMessage(void)
 
     if (sChat->currentPage != UNION_ROOM_KB_PAGE_REGISTER)
     {
-        // Going to append a single character
+        // Going to append a single character        
         charsStr = sUnionRoomKeyboardText[sChat->currentPage][sChat->currentRow];
         for (i = 0; i < sChat->currentCol; i++)
         {
@@ -1734,7 +1707,7 @@ static void SwitchCaseOfLastMessageCharacter(void)
     str = GetLastCharOfMessagePtr();
     if (*str != CHAR_EXTRA_SYMBOL)
     {
-        character = gCaseToggleTable[*str];
+        character = sCaseToggleTable[*str];
         if (character)
             *str = character;
     }
@@ -1758,7 +1731,7 @@ static void RegisterTextAtRow(void)
 static void ResetMessageEntryBuffer(void)
 {
     sChat->messageEntryBuffer[0] = EOS;
-    sChat->lastBufferCursorPos = MAX_MESSAGE_LENGTH;
+    sChat->lastBufferCursorPos = 15;
     sChat->bufferCursorPos = 0;
 }
 
@@ -1846,7 +1819,7 @@ static void PrepareSendBuffer_Leave(u8 *buffer)
     buffer[0] = CHAT_MESSAGE_LEAVE;
     StringCopy(&buffer[1], gSaveBlock2Ptr->playerName);
     buffer[1 + (PLAYER_NAME_LENGTH + 1)] = sChat->multiplayerId;
-    RfuSetNormalDisconnectMode();
+    sub_8011A50();
 }
 
 static void PrepareSendBuffer_Drop(u8 *buffer)
@@ -1997,10 +1970,10 @@ static int GetShouldShowCaseToggleIcon(void)
 {
     u8 *str = GetLastCharOfMessagePtr();
     u32 character = *str;
-    if (character > EOS || gCaseToggleTable[character] == character || gCaseToggleTable[character] == CHAR_SPACE)
-        return 3; // Don't show
+    if (character > 0xFF || sCaseToggleTable[character] == character || sCaseToggleTable[character] == 0)
+        return 3;
     else
-        return 0; // Show
+        return 0;
 }
 
 static u8 *GetChatHostName(void)
@@ -2055,17 +2028,17 @@ static void Task_ReceiveChatMessage(u8 taskId)
         }
 
         tBlockReceivedStatus = GetBlockReceivedStatus();
-        if (!tBlockReceivedStatus && Rfu_IsPlayerExchangeActive())
+        if (!tBlockReceivedStatus && sub_8011A9C())
             return;
 
         tI = 0;
         tState = 3;
         // fall through
     case 3:
-        for (; tI < MAX_RFU_PLAYERS && ((tBlockReceivedStatus >> tI) & 1) == 0; tI++)
+        for (; tI < 5 && ((tBlockReceivedStatus >> tI) & 1) == 0; tI++)
             ;
 
-        if (tI == MAX_RFU_PLAYERS)
+        if (tI == 5)
         {
             tState = 1;
             return;
@@ -2077,7 +2050,7 @@ static void Task_ReceiveChatMessage(u8 taskId)
         switch (buffer[0])
         {
             default:
-            case CHAT_MESSAGE_CHAT:    tNextState = 3; break;
+            case CHAT_MESSAGE_CHAT:     tNextState = 3; break;
             case CHAT_MESSAGE_JOIN:    tNextState = 3; break;
             case CHAT_MESSAGE_LEAVE:   tNextState = 4; break;
             case CHAT_MESSAGE_DROP:    tNextState = 5; break;
@@ -2106,31 +2079,32 @@ static void Task_ReceiveChatMessage(u8 taskId)
         {
             if (GetLinkPlayerCount() == 2)
             {
-                Rfu_StopPartnerSearch();
-                sChat->exitType = CHAT_EXIT_ONLY_LEADER;
+                sub_80104B0();
+                sChat->exitType = 1;
                 DestroyTask(taskId);
                 return;
             }
-            Rfu_DisconnectPlayerById(tCurrLinkPlayer);
+
+            sub_8011DE0(tCurrLinkPlayer);
         }
 
         tState = 3;
         break;
     case 5:
         if (sChat->multiplayerId)
-            sChat->exitType = CHAT_EXIT_DROPPED;
+            sChat->exitType = 2;
 
         DestroyTask(taskId);
         break;
     case 6:
-        sChat->exitType = CHAT_EXIT_DISBANDED;
+        sChat->exitType = 3;
         DestroyTask(taskId);
         break;
     case 2:
-        if (!Rfu_IsPlayerExchangeActive())
+        if (!sub_8011A9C())
         {
             if (!sChat->multiplayerId)
-                SetUnionRoomChatPlayerData(sChat->linkPlayerCount);
+                sub_80110B8(sChat->linkPlayerCount);
 
             tState = 1;
         }
@@ -2174,7 +2148,8 @@ static bool32 IsDisplaySubtask0Active(void)
 static void FreeDisplay(void)
 {
     FreeSprites();
-    TRY_FREE_AND_SET_NULL(sDisplay);
+    if (sDisplay)
+        FREE_AND_SET_NULL(sDisplay);
 
     FreeAllWindowBuffers();
     gScanlineEffect.state = 3;
@@ -2253,17 +2228,17 @@ static bool32 Display_LoadGfx(u8 *state)
         ClearBg0();
         break;
     case 2:
-        LoadKeyboardWindowGfx();
+        LoadChatWindowBorderGfx();
         break;
     case 3:
         LoadChatWindowGfx();
         break;
     case 4:
-        LoadChatUnkPalette();
+        sub_8020680();
         break;
     case 5:
         LoadChatMessagesWindow();
-        DrawKeyboardWindow();
+        LoadKeyboardWindow();
         LoadKeyboardSwapWindow();
         LoadTextEntryWindow();
         break;
@@ -2289,7 +2264,7 @@ static bool32 Display_ShowKeyboardSwapMenu(u8 *state)
     {
     case 0:
         ShowKeyboardSwapMenu();
-        CopyWindowToVram(WIN_SWAP_MENU, COPYWIN_FULL);
+        CopyWindowToVram(3, 3);
         break;
     case 1:
         return IsDma3ManagerBusyWithBgCopy();
@@ -2305,7 +2280,7 @@ static bool32 Display_HideKeyboardSwapMenu(u8 *state)
     {
     case 0:
         HideKeyboardSwapMenu();
-        CopyWindowToVram(WIN_SWAP_MENU, COPYWIN_FULL);
+        CopyWindowToVram(3, 3);
         break;
     case 1:
         return IsDma3ManagerBusyWithBgCopy();
@@ -2321,18 +2296,18 @@ static bool32 Display_SwitchPages(u8 *state)
     {
     case 0:
         SetKeyboardCursorInvisibility(TRUE);
-        if (SlideKeyboardPageOut())
+        if (sub_8020320())
             return TRUE;
 
         PrintCurrentKeyboardPage();
-        CopyWindowToVram(WIN_KEYBOARD, COPYWIN_GFX);
+        CopyWindowToVram(2, 2);
         break;
     case 1:
         if (IsDma3ManagerBusyWithBgCopy())
             return TRUE;
         break;
     case 2:
-        if (SlideKeyboardPageIn())
+        if (sub_8020368())
             return TRUE;
 
         MoveKeyboardCursor();
@@ -2358,7 +2333,7 @@ static bool32 Display_AskQuitChatting(u8 *state)
     case 0:
         AddStdMessageWindow(STDMESSAGE_QUIT_CHATTING, 0);
         AddYesNoMenuAt(23, 11, 1);
-        CopyWindowToVram(sDisplay->messageWindowId, COPYWIN_FULL);
+        CopyWindowToVram(sDisplay->messageWindowId, 3);
         break;
     case 1:
         return IsDma3ManagerBusyWithBgCopy();
@@ -2402,7 +2377,7 @@ static bool32 Display_UpdateMessageBuffer(u8 *state)
         FillTextEntryWindow(x, width, 0);
         str = GetMessageEntryBuffer();
         DrawTextEntryMessage(0, str, 3, 1, 2);
-        CopyWindowToVram(WIN_TEXT_ENTRY, COPYWIN_GFX);
+        CopyWindowToVram(1, 2);
         break;
     case 1:
         if (!IsDma3ManagerBusyWithBgCopy())
@@ -2431,13 +2406,13 @@ static bool32 Display_AskRegisterText(u8 *state)
         length = StringLength_Multibyte(str);
         FillTextEntryWindow(x, length, PIXEL_FILL(6));
         DrawTextEntryMessage(x, str, 0, 4, 5);
-        CopyWindowToVram(WIN_TEXT_ENTRY, COPYWIN_GFX);
+        CopyWindowToVram(1, 2);
         break;
     case 1:
         if (!IsDma3ManagerBusyWithBgCopy())
         {
             AddStdMessageWindow(STDMESSAGE_REGISTER_WHERE, 16);
-            CopyWindowToVram(sDisplay->messageWindowId, COPYWIN_FULL);
+            CopyWindowToVram(sDisplay->messageWindowId, 3);
         }
         else
         {
@@ -2472,13 +2447,13 @@ static bool32 Display_CancelRegister(u8 *state)
         length = StringLength_Multibyte(str);
         FillTextEntryWindow(x, length, PIXEL_FILL(0));
         DrawTextEntryMessage(x, str, 3, 1, 2);
-        CopyWindowToVram(WIN_TEXT_ENTRY, COPYWIN_GFX);
+        CopyWindowToVram(1, 2);
         break;
     case 1:
         if (!IsDma3ManagerBusyWithBgCopy())
         {
             HideStdMessageWindow();
-            CopyWindowToVram(sDisplay->messageWindowId, COPYWIN_FULL);
+            CopyWindowToVram(sDisplay->messageWindowId, 3);
         }
         else
         {
@@ -2510,7 +2485,7 @@ static bool32 Display_ReturnToKeyboard(u8 *state)
     {
     case 0:
         PrintCurrentKeyboardPage();
-        CopyWindowToVram(WIN_KEYBOARD, COPYWIN_GFX);
+        CopyWindowToVram(2, 2);
         (*state)++;
         break;
     case 1:
@@ -2536,7 +2511,7 @@ static bool32 Display_ScrollChat(u8 *state)
         str = GetLastReceivedMessage();
         colorIdx = GetReceivedPlayerIndex();
         PrintChatMessage(row, str, colorIdx);
-        CopyWindowToVram(WIN_CHAT_HISTORY, COPYWIN_GFX);
+        CopyWindowToVram(0, 2);
         break;
     case 1:
         if (IsDma3ManagerBusyWithBgCopy())
@@ -2555,8 +2530,8 @@ static bool32 Display_ScrollChat(u8 *state)
         }
         // fall through
     case 2:
-        ScrollWindow(WIN_CHAT_HISTORY, 0, 5, PIXEL_FILL(1));
-        CopyWindowToVram(WIN_CHAT_HISTORY, COPYWIN_GFX);
+        ScrollWindow(0, 0, 5, PIXEL_FILL(1));
+        CopyWindowToVram(0, 2);
         sDisplay->scrollCount++;
         (*state)++;
         // fall through
@@ -2601,7 +2576,7 @@ static bool32 Display_PrintInputText(u8 *state)
     {
     case 0:
         AddStdMessageWindow(STDMESSAGE_INPUT_TEXT, 16);
-        CopyWindowToVram(sDisplay->messageWindowId, COPYWIN_FULL);
+        CopyWindowToVram(sDisplay->messageWindowId, 3);
         (*state)++;
         break;
     case 1:
@@ -2617,7 +2592,7 @@ static bool32 Display_PrintExitingChat(u8 *state)
     {
     case 0:
         AddStdMessageWindow(STDMESSAGE_EXITING_CHAT, 0);
-        CopyWindowToVram(sDisplay->messageWindowId, COPYWIN_FULL);
+        CopyWindowToVram(sDisplay->messageWindowId, 3);
         (*state)++;
         break;
     case 1:
@@ -2638,7 +2613,7 @@ static bool32 Display_PrintLeaderLeft(u8 *state)
         str = GetChatHostName();
         DynamicPlaceholderTextUtil_SetPlaceholderPtr(0, str);
         AddStdMessageWindow(STDMESSAGE_LEADER_LEFT, 0);
-        CopyWindowToVram(sDisplay->messageWindowId, COPYWIN_FULL);
+        CopyWindowToVram(sDisplay->messageWindowId, 3);
         (*state)++;
         break;
     case 1:
@@ -2655,7 +2630,7 @@ static bool32 Display_AskSave(u8 *state)
     case 0:
         AddStdMessageWindow(STDMESSAGE_ASK_SAVE, 0);
         AddYesNoMenuAt(23, 10, 1);
-        CopyWindowToVram(sDisplay->messageWindowId, COPYWIN_FULL);
+        CopyWindowToVram(sDisplay->messageWindowId, 3);
         (*state)++;
         break;
     case 1:
@@ -2672,7 +2647,7 @@ static bool32 Display_AskOverwriteSave(u8 *state)
     case 0:
         AddStdMessageWindow(STDMESSAGE_ASK_OVERWRITE, 0);
         AddYesNoMenuAt(23, 10, 1);
-        CopyWindowToVram(sDisplay->messageWindowId, COPYWIN_FULL);
+        CopyWindowToVram(sDisplay->messageWindowId, 3);
         (*state)++;
         break;
     case 1:
@@ -2688,7 +2663,7 @@ static bool32 Display_PrintSavingDontTurnOff(u8 *state)
     {
     case 0:
         AddStdMessageWindow(STDMESSAGE_SAVING_NO_OFF, 0);
-        CopyWindowToVram(sDisplay->messageWindowId, COPYWIN_FULL);
+        CopyWindowToVram(sDisplay->messageWindowId, 3);
         (*state)++;
         break;
     case 1:
@@ -2706,7 +2681,7 @@ static bool32 Display_PrintSavedTheGame(u8 *state)
         DynamicPlaceholderTextUtil_Reset();
         DynamicPlaceholderTextUtil_SetPlaceholderPtr(0, gSaveBlock2Ptr->playerName);
         AddStdMessageWindow(STDMESSAGE_SAVED_THE_GAME, 0);
-        CopyWindowToVram(sDisplay->messageWindowId, COPYWIN_FULL);
+        CopyWindowToVram(sDisplay->messageWindowId, 3);
         (*state)++;
         break;
     case 1:
@@ -2723,7 +2698,7 @@ static bool32 Display_AskConfirmLeaderLeave(u8 *state)
     case 0:
         AddStdMessageWindow(STDMESSAGE_WARN_LEADER_LEAVE, 0);
         AddYesNoMenuAt(23, 10, 1);
-        CopyWindowToVram(sDisplay->messageWindowId, COPYWIN_FULL);
+        CopyWindowToVram(sDisplay->messageWindowId, 3);
         (*state)++;
         break;
     case 1:
@@ -2753,10 +2728,10 @@ static void AddYesNoMenuAt(u8 left, u8 top, u8 initialCursorPos)
     {
         FillWindowPixelBuffer(sDisplay->yesNoMenuWindowId, PIXEL_FILL(1));
         PutWindowTilemap(sDisplay->yesNoMenuWindowId);
-        AddTextPrinterParameterized(sDisplay->yesNoMenuWindowId, FONT_NORMAL, gText_Yes, 8, 1, TEXT_SKIP_DRAW, NULL);
-        AddTextPrinterParameterized(sDisplay->yesNoMenuWindowId, FONT_NORMAL, gText_No, 8, 17, TEXT_SKIP_DRAW, NULL);
+        AddTextPrinterParameterized(sDisplay->yesNoMenuWindowId, 1, gText_Yes, 8, 1, TEXT_SPEED_FF, NULL);
+        AddTextPrinterParameterized(sDisplay->yesNoMenuWindowId, 1, gText_No, 8, 17, TEXT_SPEED_FF, NULL);
         DrawTextBorderOuter(sDisplay->yesNoMenuWindowId, 1, 13);
-        InitMenuInUpperLeftCornerNormal(sDisplay->yesNoMenuWindowId, 2, initialCursorPos);
+        InitMenuInUpperLeftCornerPlaySoundWhenAPressed(sDisplay->yesNoMenuWindowId, 2, initialCursorPos);
     }
 }
 
@@ -2816,7 +2791,7 @@ static void AddStdMessageWindow(int msgId, u16 bg0vofs)
         str = sDisplayStdMessages[msgId].text;
     }
 
-    ChangeBgY(0, bg0vofs * 256, BG_COORD_SET);
+    ChangeBgY(0, bg0vofs * 256, 0);
     FillWindowPixelBuffer(windowId, PIXEL_FILL(1));
     PutWindowTilemap(windowId);
     if (sDisplayStdMessages[msgId].boxType == 1)
@@ -2824,11 +2799,11 @@ static void AddStdMessageWindow(int msgId, u16 bg0vofs)
         DrawTextBorderInner(windowId, 0xA, 2);
         AddTextPrinterParameterized5(
             windowId,
-            FONT_NORMAL,
+            1,
             str,
             sDisplayStdMessages[msgId].x + 8,
             sDisplayStdMessages[msgId].y + 8,
-            TEXT_SKIP_DRAW,
+            TEXT_SPEED_FF,
             NULL,
             sDisplayStdMessages[msgId].letterSpacing,
             sDisplayStdMessages[msgId].lineSpacing);
@@ -2838,11 +2813,11 @@ static void AddStdMessageWindow(int msgId, u16 bg0vofs)
         DrawTextBorderOuter(windowId, 0xA, 2);
         AddTextPrinterParameterized5(
             windowId,
-            FONT_NORMAL,
+            1,
             str,
             sDisplayStdMessages[msgId].x,
             sDisplayStdMessages[msgId].y,
-            TEXT_SKIP_DRAW,
+            TEXT_SPEED_FF,
             NULL,
             sDisplayStdMessages[msgId].letterSpacing,
             sDisplayStdMessages[msgId].lineSpacing);
@@ -2859,7 +2834,7 @@ static void HideStdMessageWindow(void)
         ClearWindowTilemap(sDisplay->messageWindowId);
     }
 
-    ChangeBgY(0, 0, BG_COORD_SET);
+    ChangeBgY(0, 0, 0);
 }
 
 static void DestroyStdMessageWindow(void)
@@ -2873,7 +2848,7 @@ static void DestroyStdMessageWindow(void)
 
 static void FillTextEntryWindow(u16 x, u16 width, u8 fillValue)
 {
-    FillWindowPixelRect(WIN_TEXT_ENTRY, fillValue, x * 8, 1, width * 8, 14);
+    FillWindowPixelRect(1, fillValue, x * 8, 1, width * 8, 14);
 }
 
 static void DrawTextEntryMessage(u16 x, u8 *str, u8 bgColor, u8 fgColor, u8 shadowColor)
@@ -2890,7 +2865,7 @@ static void DrawTextEntryMessage(u16 x, u8 *str, u8 bgColor, u8 fgColor, u8 shad
     strBuffer[1] = EXT_CTRL_CODE_MIN_LETTER_SPACING;
     strBuffer[2] = 8;
     StringCopy(&strBuffer[3], str);
-    AddTextPrinterParameterized3(WIN_TEXT_ENTRY, FONT_SHORT, x * 8, 1, color, TEXT_SKIP_DRAW, strBuffer);
+    AddTextPrinterParameterized3(1, 2, x * 8, 1, color, TEXT_SPEED_FF, strBuffer);
 }
 
 static void PrintCurrentKeyboardPage(void)
@@ -2903,7 +2878,7 @@ static void PrintCurrentKeyboardPage(void)
     u8 str[45];
     u8 *str2;
 
-    FillWindowPixelBuffer(WIN_KEYBOARD, PIXEL_FILL(15));
+    FillWindowPixelBuffer(2, PIXEL_FILL(15));
     page = GetCurrentKeyboardPage();
     color[0] = TEXT_COLOR_TRANSPARENT;
     color[1] = TEXT_DYNAMIC_COLOR_5;
@@ -2925,7 +2900,7 @@ static void PrintCurrentKeyboardPage(void)
                 return;
 
             StringCopy(&str[3], sUnionRoomKeyboardText[page][i]);
-            AddTextPrinterParameterized3(WIN_KEYBOARD, FONT_SMALL, left, top, color, TEXT_SKIP_DRAW, str);
+            AddTextPrinterParameterized3(2, 0, left, top, color, TEXT_SPEED_FF, str);
         }
     }
     else
@@ -2934,9 +2909,9 @@ static void PrintCurrentKeyboardPage(void)
         for (i = 0, top = 0; i < UNION_ROOM_KB_ROW_COUNT; i++, top += 12)
         {
             str2 = GetRegisteredTextByRow(i);
-            if (GetStringWidth(FONT_SMALL, str2, 0) <= 40)
+            if (GetStringWidth(0, str2, 0) <= 40)
             {
-                AddTextPrinterParameterized3(WIN_KEYBOARD, FONT_SMALL, left, top, color, TEXT_SKIP_DRAW, str2);
+                AddTextPrinterParameterized3(2, 0, left, top, color, TEXT_SPEED_FF, str2);
             }
             else
             {
@@ -2945,38 +2920,35 @@ static void PrintCurrentKeyboardPage(void)
                 {
                     length--;
                     StringCopyN_Multibyte(str, str2, length);
-                } while (GetStringWidth(FONT_SMALL, str, 0) > 35);
+                } while (GetStringWidth(0, str, 0) > 35);
 
-                AddTextPrinterParameterized3(WIN_KEYBOARD, FONT_SMALL, left, top, color, TEXT_SKIP_DRAW, str);
-                AddTextPrinterParameterized3(WIN_KEYBOARD, FONT_SMALL, left + 35, top, color, TEXT_SKIP_DRAW, sText_Ellipsis);
+                AddTextPrinterParameterized3(2, 0, left, top, color, TEXT_SPEED_FF, str);
+                AddTextPrinterParameterized3(2, 0, left + 35, top, color, TEXT_SPEED_FF, sText_Ellipsis);
             }
         }
     }
 }
 
-#define KEYBOARD_HOFS_END 56
-
-static bool32 SlideKeyboardPageOut(void)
+static bool32 sub_8020320(void)
 {
-    if (sDisplay->bg1hofs < KEYBOARD_HOFS_END)
+    if (sDisplay->bg1hofs < 56)
     {
         sDisplay->bg1hofs += 12;
-        if (sDisplay->bg1hofs >= KEYBOARD_HOFS_END)
-            sDisplay->bg1hofs = KEYBOARD_HOFS_END;
+        if (sDisplay->bg1hofs >= 56)
+            sDisplay->bg1hofs = 56;
 
-        if (sDisplay->bg1hofs < KEYBOARD_HOFS_END)
+        if (sDisplay->bg1hofs < 56)
         {
-            // Still sliding
-            UpdateSlidingKeyboard(sDisplay->bg1hofs);
+            sub_80207C0(sDisplay->bg1hofs);
             return TRUE;
         }
     }
 
-    FinishSlidingKeyboard(sDisplay->bg1hofs);
+    sub_8020818(sDisplay->bg1hofs);
     return FALSE;
 }
 
-static bool32 SlideKeyboardPageIn(void)
+static bool32 sub_8020368(void)
 {
     if (sDisplay->bg1hofs > 0)
     {
@@ -2986,52 +2958,51 @@ static bool32 SlideKeyboardPageIn(void)
 
         if (sDisplay->bg1hofs > 0)
         {
-            // Still sliding
-            UpdateSlidingKeyboard(sDisplay->bg1hofs);
+            sub_80207C0(sDisplay->bg1hofs);
             return TRUE;
         }
     }
 
-    FinishSlidingKeyboard(sDisplay->bg1hofs);
+    sub_8020818(sDisplay->bg1hofs);
     return FALSE;
 }
 
 static void ShowKeyboardSwapMenu(void)
 {
-    FillWindowPixelBuffer(WIN_SWAP_MENU, PIXEL_FILL(1));
-    DrawTextBorderOuter(WIN_SWAP_MENU, 1, 13);
-    PrintMenuActionTextsAtPos(WIN_SWAP_MENU, FONT_SHORT, 8, 1, 14, ARRAY_COUNT(sKeyboardPageTitleTexts), sKeyboardPageTitleTexts);
-    InitMenuNormal(WIN_SWAP_MENU, FONT_SHORT, 0, 1, 14, 5, GetCurrentKeyboardPage());
-    PutWindowTilemap(WIN_SWAP_MENU);
+    FillWindowPixelBuffer(3, PIXEL_FILL(1));
+    DrawTextBorderOuter(3, 1, 13);
+    PrintTextArray(3, 2, 8, 1, 14, 5, sKeyboardPageTitleTexts);
+    sub_81983AC(3, 2, 0, 1, 14, 5, GetCurrentKeyboardPage());
+    PutWindowTilemap(3);
 }
 
 static void HideKeyboardSwapMenu(void)
 {
-    ClearStdWindowAndFrameToTransparent(WIN_SWAP_MENU, FALSE);
-    ClearWindowTilemap(WIN_SWAP_MENU);
+    ClearStdWindowAndFrameToTransparent(3, FALSE);
+    ClearWindowTilemap(3);
 }
 
 static void PrintChatMessage(u16 row, u8 *str, u8 colorIdx)
 {
-    // colorIdx: 0 = gray, 1 = red, 2 = green, 3 = blue
+    // colorIdx: 0 = grey, 1 = red, 2 = green, 3 = blue
     u8 color[3];
     color[0] = TEXT_COLOR_WHITE;
     color[1] = colorIdx * 2 + 2;
     color[2] = colorIdx * 2 + 3;
-    FillWindowPixelRect(WIN_CHAT_HISTORY, PIXEL_FILL(1), 0, row * 15, 168, 15);
-    AddTextPrinterParameterized3(WIN_CHAT_HISTORY, FONT_SHORT, 0, row * 15 + 1, color, TEXT_SKIP_DRAW, str);
+    FillWindowPixelRect(0, PIXEL_FILL(1), 0, row * 15, 168, 15);
+    AddTextPrinterParameterized3(0, 2, 0, row * 15 + 1, color, TEXT_SPEED_FF, str);
 }
 
 static void ResetGpuBgState(void)
 {
-    ChangeBgX(0, 0, BG_COORD_SET);
-    ChangeBgY(0, 0, BG_COORD_SET);
-    ChangeBgX(1, 0, BG_COORD_SET);
-    ChangeBgY(1, 0, BG_COORD_SET);
-    ChangeBgX(2, 0, BG_COORD_SET);
-    ChangeBgY(2, 0, BG_COORD_SET);
-    ChangeBgX(3, 0, BG_COORD_SET);
-    ChangeBgY(3, 0, BG_COORD_SET);
+    ChangeBgX(0, 0, 0);
+    ChangeBgY(0, 0, 0);
+    ChangeBgX(1, 0, 0);
+    ChangeBgY(1, 0, 0);
+    ChangeBgX(2, 0, 0);
+    ChangeBgY(2, 0, 0);
+    ChangeBgX(3, 0, 0);
+    ChangeBgY(3, 0, 0);
     ShowBg(0);
     ShowBg(1);
     ShowBg(2);
@@ -3040,8 +3011,8 @@ static void ResetGpuBgState(void)
     SetGpuReg(REG_OFFSET_BLDCNT, 0);
     ClearGpuRegBits(REG_OFFSET_DISPCNT, DISPCNT_WIN0_ON | DISPCNT_WIN1_ON | DISPCNT_OBJWIN_ON);
     SetGpuRegBits(REG_OFFSET_DISPCNT, DISPCNT_WIN0_ON);
-    SetGpuReg(REG_OFFSET_WIN0H, WIN_RANGE(64, DISPLAY_WIDTH));
-    SetGpuReg(REG_OFFSET_WIN0V, WIN_RANGE(0, DISPLAY_HEIGHT - 16));
+    SetGpuReg(REG_OFFSET_WIN0H, WIN_RANGE(64, 240));
+    SetGpuReg(REG_OFFSET_WIN0V, WIN_RANGE(0, 144));
     SetGpuReg(REG_OFFSET_WININ, WININ_WIN0_BG0 | WININ_WIN0_BG2 | WININ_WIN0_BG3
                               | WININ_WIN0_OBJ | WININ_WIN0_CLR);
     SetGpuReg(REG_OFFSET_WINOUT, WINOUT_WIN01_BG_ALL | WINOUT_WIN01_OBJ | WINOUT_WIN01_CLR);
@@ -3062,12 +3033,12 @@ static void ClearBg0(void)
     CopyBgTilemapBufferToVram(0);
 }
 
-static void LoadKeyboardWindowGfx(void)
+static void LoadChatWindowBorderGfx(void)
 {
-    LoadPalette(gUnionRoomChat_Keyboard_Pal, BG_PLTT_ID(7), PLTT_SIZE_4BPP);
-    LoadPalette(gUnionRoomChat_InputText_Pal, BG_PLTT_ID(12), PLTT_SIZE_4BPP);
-    DecompressAndCopyTileDataToVram(1, gUnionRoomChat_Keyboard_Gfx, 0, 0, 0);
-    CopyToBgTilemapBuffer(1, gUnionRoomChat_Keyboard_Tilemap, 0, 0);
+    LoadPalette(gUnionRoomChat_Window_Pal2, 0x70, 0x20);
+    LoadPalette(gUnionRoomChat_Window_Pal1, 0xC0, 0x20);
+    DecompressAndCopyTileDataToVram(1, gUnionRoomChat_Border_Gfx, 0, 0, 0);
+    CopyToBgTilemapBuffer(1, gUnionRoomChat_Border_Tilemap, 0, 0);
     CopyBgTilemapBufferToVram(1);
 }
 
@@ -3075,41 +3046,37 @@ static void LoadChatWindowGfx(void)
 {
     u8 *ptr;
 
-    LoadPalette(gUnionRoomChat_Background_Pal, BG_PLTT_ID(0), PLTT_SIZE_4BPP);
+    LoadPalette(gUnionRoomChat_Background_Pal, 0, 0x20);
     ptr = DecompressAndCopyTileDataToVram(2, gUnionRoomChat_Background_Gfx, 0, 0, 0);
     if (ptr)
     {
-        // The below is nonsense. Tiles 0x11 and 0x21 of the background tileset are
-        // the second half of "OK" and the "T" in "START" in the instructions header.
-        // They're later blitted onto the text entry window, then immediately cleared.
-        // The window has a different palette as well, so the tiles would appear mostly black anyway.
-        CpuFastCopy(&ptr[0x11 * TILE_SIZE_4BPP], &sDisplay->textEntryTiles[TILE_SIZE_4BPP * 0], TILE_SIZE_4BPP);
-        CpuFastCopy(&ptr[0x21 * TILE_SIZE_4BPP], &sDisplay->textEntryTiles[TILE_SIZE_4BPP * 1], TILE_SIZE_4BPP);
+        CpuFastCopy(&ptr[0x220], sDisplay->unk2128, 0x20);
+        CpuFastCopy(&ptr[0x420], sDisplay->unk2148, 0x20);
     }
 
     CopyToBgTilemapBuffer(2, gUnionRoomChat_Background_Tilemap, 0, 0);
     CopyBgTilemapBufferToVram(2);
 }
 
-static void LoadChatUnkPalette(void)
+static void sub_8020680(void)
 {
-    LoadPalette(sUnusedPalette, BG_PLTT_ID(8), sizeof(sUnusedPalette));
-    RequestDma3Fill(0, (void *)BG_CHAR_ADDR(1) + TILE_SIZE_4BPP, TILE_SIZE_4BPP, 1);
+    LoadPalette(sUnk_Palette1, 0x80, 0x20);
+    RequestDma3Fill(0, (void *)BG_CHAR_ADDR(1) + 0x20, 0x20, 1);
 }
 
 static void LoadChatMessagesWindow(void)
 {
-    LoadPalette(sChatMessagesWindow_Pal, BG_PLTT_ID(15), sizeof(sChatMessagesWindow_Pal));
-    PutWindowTilemap(WIN_CHAT_HISTORY);
-    FillWindowPixelBuffer(WIN_CHAT_HISTORY, PIXEL_FILL(1));
-    CopyWindowToVram(WIN_CHAT_HISTORY, COPYWIN_FULL);
+    LoadPalette(sUnk_Palette2, 0xF0, 0x20);
+    PutWindowTilemap(0);
+    FillWindowPixelBuffer(0, PIXEL_FILL(1));
+    CopyWindowToVram(0, 3);
 }
 
-static void DrawKeyboardWindow(void)
+static void LoadKeyboardWindow(void)
 {
-    PutWindowTilemap(WIN_KEYBOARD);
+    PutWindowTilemap(2);
     PrintCurrentKeyboardPage();
-    CopyWindowToVram(WIN_KEYBOARD, COPYWIN_FULL);
+    CopyWindowToVram(2, 3);
 }
 
 static void LoadTextEntryWindow(void)
@@ -3119,21 +3086,20 @@ static void LoadTextEntryWindow(void)
     unused[0] = 0;
     unused[1] = 0xFF;
 
-    // Pointless, cleared below. The tiles are nonsense anyway, see LoadChatWindowGfx.
     for (i = 0; i < MAX_MESSAGE_LENGTH; i++)
-        BlitBitmapToWindow(WIN_TEXT_ENTRY, sDisplay->textEntryTiles, i * 8, 0, 8, 16);
+        BlitBitmapToWindow(1, sDisplay->unk2128, i * 8, 0, 8, 16);
 
-    FillWindowPixelBuffer(WIN_TEXT_ENTRY, PIXEL_FILL(0));
-    PutWindowTilemap(WIN_TEXT_ENTRY);
-    CopyWindowToVram(WIN_TEXT_ENTRY, COPYWIN_FULL);
+    FillWindowPixelBuffer(1, PIXEL_FILL(0));
+    PutWindowTilemap(1);
+    CopyWindowToVram(1, 3);
 }
 
 static void LoadKeyboardSwapWindow(void)
 {
-    FillWindowPixelBuffer(WIN_SWAP_MENU, PIXEL_FILL(1));
-    LoadUserWindowBorderGfx(WIN_SWAP_MENU, 1, BG_PLTT_ID(13));
-    LoadUserWindowBorderGfx_(WIN_SWAP_MENU, 0xA, BG_PLTT_ID(2));
-    LoadPalette(gStandardMenuPalette, BG_PLTT_ID(14), PLTT_SIZE_4BPP);
+    FillWindowPixelBuffer(3, PIXEL_FILL(1));
+    LoadUserWindowBorderGfx(3, 1, 0xD0);
+    LoadUserWindowBorderGfx_(3, 0xA, 0x20);
+    LoadPalette(gUnknown_0860F074, 0xE0,  0x20);
 }
 
 static void InitScanlineEffect(void)
@@ -3148,13 +3114,13 @@ static void InitScanlineEffect(void)
     ScanlineEffect_SetParams(params);
 }
 
-static void UpdateSlidingKeyboard(s16 bg1hofs)
+static void sub_80207C0(s16 bg1hofs)
 {
     CpuFill16(bg1hofs, gScanlineEffectRegBuffers[gScanlineEffect.srcBuffer], 0x120);
     CpuFill16(0,       gScanlineEffectRegBuffers[gScanlineEffect.srcBuffer] + 0x90, 0x20);
 }
 
-static void FinishSlidingKeyboard(s16 bg1hofs)
+static void sub_8020818(s16 bg1hofs)
 {
     CpuFill16(bg1hofs, gScanlineEffectRegBuffers[0],         0x120);
     CpuFill16(0,       gScanlineEffectRegBuffers[0] +  0x90, 0x20);
@@ -3169,7 +3135,7 @@ static bool32 TryAllocSprites(void)
         LoadCompressedSpriteSheet(&sSpriteSheets[i]);
 
     LoadSpritePalette(&sSpritePalette);
-    sSprites = Alloc(sizeof(*sSprites));
+    sSprites = Alloc(sizeof(struct UnionRoomChatSprites));
     if (!sSprites)
         return FALSE;
 
@@ -3201,22 +3167,22 @@ static void MoveKeyboardCursor(void)
     if (page != UNION_ROOM_KB_PAGE_REGISTER)
     {
         StartSpriteAnim(sSprites->keyboardCursor, 0);
-        sSprites->keyboardCursor->x = x * 8 + 10;
-        sSprites->keyboardCursor->y = y * 12 + 24;
+        sSprites->keyboardCursor->pos1.x = x * 8 + 10;
+        sSprites->keyboardCursor->pos1.y = y * 12 + 24;
     }
     else
     {
         StartSpriteAnim(sSprites->keyboardCursor, 2);
-        sSprites->keyboardCursor->x = 24;
-        sSprites->keyboardCursor->y = y * 12 + 24;
+        sSprites->keyboardCursor->pos1.x = 24;
+        sSprites->keyboardCursor->pos1.y = y * 12 + 24;
     }
 }
 
 static void SetRegisteredTextPalette(bool32 registering)
 {
     const u16 *palette = &sUnionRoomChatInterfacePal[registering * 2 + 1];
-    u8 index = IndexOfSpritePaletteTag(PALTAG_INTERFACE);
-    LoadPalette(palette, OBJ_PLTT_ID(index) + 1, PLTT_SIZEOF(2));
+    u8 index = IndexOfSpritePaletteTag(0);
+    LoadPalette(palette, index * 16 + 0x101, 4);
 }
 
 static void StartKeyboardCursorAnim(void)
@@ -3265,7 +3231,7 @@ static void SpriteCB_TextEntryCursor(struct Sprite *sprite)
     else
     {
         sprite->invisible = FALSE;
-        sprite->x = pos * 8 + 76;
+        sprite->pos1.x = pos * 8 + 76;
     }
 }
 
@@ -3274,8 +3240,8 @@ static void SpriteCB_TextEntryArrow(struct Sprite *sprite)
     if (++sprite->data[0] > 4)
     {
         sprite->data[0] = 0;
-        if (++sprite->x2 > 4)
-            sprite->x2 = 0;
+        if (++sprite->pos2.x > 4)
+            sprite->pos2.x = 0;
     }
 }
 

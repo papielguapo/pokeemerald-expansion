@@ -3,7 +3,6 @@
 #include "battle.h"
 #include "data.h"
 #include "graphics.h"
-#include "constants/abilities.h"
 #include "constants/items.h"
 #include "constants/moves.h"
 #include "constants/trainers.h"
@@ -49,68 +48,68 @@ const struct SpriteFrameImage gBattlerPicTable_OpponentRight[] =
 
 const struct SpriteFrameImage gTrainerBackPicTable_Brendan[] =
 {
-    gTrainerBackPic_Brendan + TRAINER_PIC_SIZE * 0, TRAINER_PIC_SIZE,
-    gTrainerBackPic_Brendan + TRAINER_PIC_SIZE * 1, TRAINER_PIC_SIZE,
-    gTrainerBackPic_Brendan + TRAINER_PIC_SIZE * 2, TRAINER_PIC_SIZE,
-    gTrainerBackPic_Brendan + TRAINER_PIC_SIZE * 3, TRAINER_PIC_SIZE,
+    gTrainerBackPic_Brendan, 0x0800,
+    gTrainerBackPic_Brendan + 0x0800, 0x0800,
+    gTrainerBackPic_Brendan + 0x1000, 0x0800,
+    gTrainerBackPic_Brendan + 0x1800, 0x0800,
 };
 
 const struct SpriteFrameImage gTrainerBackPicTable_May[] =
 {
-    gTrainerBackPic_May + TRAINER_PIC_SIZE * 0, TRAINER_PIC_SIZE,
-    gTrainerBackPic_May + TRAINER_PIC_SIZE * 1, TRAINER_PIC_SIZE,
-    gTrainerBackPic_May + TRAINER_PIC_SIZE * 2, TRAINER_PIC_SIZE,
-    gTrainerBackPic_May + TRAINER_PIC_SIZE * 3, TRAINER_PIC_SIZE,
+    gTrainerBackPic_May, 0x0800,
+    gTrainerBackPic_May + 0x0800, 0x0800,
+    gTrainerBackPic_May + 0x1000, 0x0800,
+    gTrainerBackPic_May + 0x1800, 0x0800,
 };
 
 const struct SpriteFrameImage gTrainerBackPicTable_Red[] =
 {
-    gTrainerBackPic_Red + TRAINER_PIC_SIZE * 0, TRAINER_PIC_SIZE,
-    gTrainerBackPic_Red + TRAINER_PIC_SIZE * 1, TRAINER_PIC_SIZE,
-    gTrainerBackPic_Red + TRAINER_PIC_SIZE * 2, TRAINER_PIC_SIZE,
-    gTrainerBackPic_Red + TRAINER_PIC_SIZE * 3, TRAINER_PIC_SIZE,
-    gTrainerBackPic_Red + TRAINER_PIC_SIZE * 4, TRAINER_PIC_SIZE,
+    gTrainerBackPic_Red, 0x0800,
+    gTrainerBackPic_Red + 0x0800, 0x0800,
+    gTrainerBackPic_Red + 0x1000, 0x0800,
+    gTrainerBackPic_Red + 0x1800, 0x0800,
+    gTrainerBackPic_Red + 0x2000, 0x0800,
 };
 
 const struct SpriteFrameImage gTrainerBackPicTable_Leaf[] =
 {
-    gTrainerBackPic_Leaf + TRAINER_PIC_SIZE * 0, TRAINER_PIC_SIZE,
-    gTrainerBackPic_Leaf + TRAINER_PIC_SIZE * 1, TRAINER_PIC_SIZE,
-    gTrainerBackPic_Leaf + TRAINER_PIC_SIZE * 2, TRAINER_PIC_SIZE,
-    gTrainerBackPic_Leaf + TRAINER_PIC_SIZE * 3, TRAINER_PIC_SIZE,
-    gTrainerBackPic_Leaf + TRAINER_PIC_SIZE * 4, TRAINER_PIC_SIZE,
+    gTrainerBackPic_Leaf, 0x0800,
+    gTrainerBackPic_Leaf + 0x0800, 0x0800,
+    gTrainerBackPic_Leaf + 0x1000, 0x0800,
+    gTrainerBackPic_Leaf + 0x1800, 0x0800,
+    gTrainerBackPic_Leaf + 0x2000, 0x0800,
 };
 
 const struct SpriteFrameImage gTrainerBackPicTable_RubySapphireBrendan[] =
 {
-    gTrainerBackPic_RubySapphireBrendan + TRAINER_PIC_SIZE * 0, TRAINER_PIC_SIZE,
-    gTrainerBackPic_RubySapphireBrendan + TRAINER_PIC_SIZE * 1, TRAINER_PIC_SIZE,
-    gTrainerBackPic_RubySapphireBrendan + TRAINER_PIC_SIZE * 2, TRAINER_PIC_SIZE,
-    gTrainerBackPic_RubySapphireBrendan + TRAINER_PIC_SIZE * 3, TRAINER_PIC_SIZE,
+    gTrainerBackPic_RubySapphireBrendan, 0x0800,
+    gTrainerBackPic_RubySapphireBrendan + 0x0800, 0x0800,
+    gTrainerBackPic_RubySapphireBrendan + 0x1000, 0x0800,
+    gTrainerBackPic_RubySapphireBrendan + 0x1800, 0x0800,
 };
 
 const struct SpriteFrameImage gTrainerBackPicTable_RubySapphireMay[] =
 {
-    gTrainerBackPic_RubySapphireMay + TRAINER_PIC_SIZE * 0, TRAINER_PIC_SIZE,
-    gTrainerBackPic_RubySapphireMay + TRAINER_PIC_SIZE * 1, TRAINER_PIC_SIZE,
-    gTrainerBackPic_RubySapphireMay + TRAINER_PIC_SIZE * 2, TRAINER_PIC_SIZE,
-    gTrainerBackPic_RubySapphireMay + TRAINER_PIC_SIZE * 3, TRAINER_PIC_SIZE,
+    gTrainerBackPic_RubySapphireMay, 0x0800,
+    gTrainerBackPic_RubySapphireMay + 0x0800, 0x0800,
+    gTrainerBackPic_RubySapphireMay + 0x1000, 0x0800,
+    gTrainerBackPic_RubySapphireMay + 0x1800, 0x0800,
 };
 
 const struct SpriteFrameImage gTrainerBackPicTable_Wally[] =
 {
-    gTrainerBackPic_Wally + TRAINER_PIC_SIZE * 0, TRAINER_PIC_SIZE,
-    gTrainerBackPic_Wally + TRAINER_PIC_SIZE * 1, TRAINER_PIC_SIZE,
-    gTrainerBackPic_Wally + TRAINER_PIC_SIZE * 2, TRAINER_PIC_SIZE,
-    gTrainerBackPic_Wally + TRAINER_PIC_SIZE * 3, TRAINER_PIC_SIZE,
+    gTrainerBackPic_Wally, 0x0800,
+    gTrainerBackPic_Wally + 0x0800, 0x0800,
+    gTrainerBackPic_Wally + 0x1000, 0x0800,
+    gTrainerBackPic_Wally + 0x1800, 0x0800,
 };
 
 const struct SpriteFrameImage gTrainerBackPicTable_Steven[] =
 {
-    gTrainerBackPic_Steven + TRAINER_PIC_SIZE * 0, TRAINER_PIC_SIZE,
-    gTrainerBackPic_Steven + TRAINER_PIC_SIZE * 1, TRAINER_PIC_SIZE,
-    gTrainerBackPic_Steven + TRAINER_PIC_SIZE * 2, TRAINER_PIC_SIZE,
-    gTrainerBackPic_Steven + TRAINER_PIC_SIZE * 3, TRAINER_PIC_SIZE,
+    gTrainerBackPic_Steven, 0x0800,
+    gTrainerBackPic_Steven + 0x0800, 0x0800,
+    gTrainerBackPic_Steven + 0x1000, 0x0800,
+    gTrainerBackPic_Steven + 0x1800, 0x0800,
 };
 
 static const union AnimCmd sAnim_GeneralFrame0[] =
@@ -125,185 +124,181 @@ static const union AnimCmd sAnim_GeneralFrame3[] =
     ANIMCMD_END,
 };
 
-// Many of these affine anims seem to go unused, and
-// instead SetSpriteRotScale is used to manipulate
-// the battler sprites directly (for instance, in AnimTask_SwitchOutShrinkMon).
-// Those with explicit indexes are referenced elsewhere.
-
-static const union AffineAnimCmd sAffineAnim_Battler_Normal[] =
+static const union AffineAnimCmd gUnknown_082FF548[] =
 {
-    AFFINEANIMCMD_FRAME(0x100, 0x100, 0, 0),
+    AFFINEANIMCMD_FRAME(0x0100, 0x0100, 0x00, 0x00),
     AFFINEANIMCMD_END,
 };
 
-static const union AffineAnimCmd sAffineAnim_Battler_Flipped[] =
+static const union AffineAnimCmd gUnknown_082FF558[] =
 {
-    AFFINEANIMCMD_FRAME(-0x100, 0x100, 0, 0),
+    AFFINEANIMCMD_FRAME(0xff00, 0x0100, 0x00, 0x00),
     AFFINEANIMCMD_END,
 };
 
-static const union AffineAnimCmd sAffineAnim_Battler_Emerge[] =
+static const union AffineAnimCmd gUnknown_082FF568[] =
 {
-    AFFINEANIMCMD_FRAME(0x28, 0x28, 0, 0),
-    AFFINEANIMCMD_FRAME(0x12, 0x12, 0, 12),
+    AFFINEANIMCMD_FRAME(0x0028, 0x0028, 0x00, 0x00),
+    AFFINEANIMCMD_FRAME(0x0012, 0x0012, 0x00, 0x0c),
     AFFINEANIMCMD_END,
 };
 
-static const union AffineAnimCmd sAffineAnim_Battler_Return[] =
+static const union AffineAnimCmd gUnknown_082FF580[] =
 {
-    AFFINEANIMCMD_FRAME( -0x2,  -0x2, 0, 18),
-    AFFINEANIMCMD_FRAME(-0x10, -0x10, 0, 15),
+    AFFINEANIMCMD_FRAME(0xfffe, 0xfffe, 0x00, 0x12),
+    AFFINEANIMCMD_FRAME(0xfff0, 0xfff0, 0x00, 0x0f),
     AFFINEANIMCMD_END,
 };
 
-static const union AffineAnimCmd sAffineAnim_Battler_HorizontalSquishLoop[] =
+static const union AffineAnimCmd gUnknown_082FF598[] =
 {
-    AFFINEANIMCMD_FRAME(0xA0, 0x100, 0, 0),
-    AFFINEANIMCMD_FRAME( 0x4,   0x0, 0, 8),
-    AFFINEANIMCMD_FRAME(-0x4,   0x0, 0, 8),
+    AFFINEANIMCMD_FRAME(0x00a0, 0x0100, 0x00, 0x00),
+    AFFINEANIMCMD_FRAME(0x0004, 0x0000, 0x00, 0x08),
+    AFFINEANIMCMD_FRAME(0xfffc, 0x0000, 0x00, 0x08),
     AFFINEANIMCMD_JUMP(1),
 };
 
-static const union AffineAnimCmd sAffineAnim_Battler_Grow[] =
+static const union AffineAnimCmd gUnknown_082FF5B8[] =
 {
-    AFFINEANIMCMD_FRAME(0x2, 0x2, 0, 20),
+    AFFINEANIMCMD_FRAME(0x0002, 0x0002, 0x00, 0x14),
     AFFINEANIMCMD_END,
 };
 
-static const union AffineAnimCmd sAffineAnim_Battler_Shrink[] =
+static const union AffineAnimCmd gUnknown_082FF5C8[] =
 {
-    AFFINEANIMCMD_FRAME(-0x2, -0x2, 0, 20),
+    AFFINEANIMCMD_FRAME(0xfffe, 0xfffe, 0x00, 0x14),
     AFFINEANIMCMD_END,
 };
 
-static const union AffineAnimCmd sAffineAnim_Battler_BigToSmall[] =
+static const union AffineAnimCmd gUnknown_082FF5D8[] =
 {
-    AFFINEANIMCMD_FRAME(0x100, 0x100, 0, 0),
-    AFFINEANIMCMD_FRAME(-0x10, -0x10, 0, 9),
+    AFFINEANIMCMD_FRAME(0x0100, 0x0100, 0x00, 0000),
+    AFFINEANIMCMD_FRAME(0xfff0, 0xfff0, 0x00, 0x09),
     AFFINEANIMCMD_END,
 };
 
-static const union AffineAnimCmd sAffineAnim_Battler_GrowLarge[] =
+static const union AffineAnimCmd gUnknown_082FF5F0[] =
 {
-    AFFINEANIMCMD_FRAME(0x4, 0x4, 0, 63),
+    AFFINEANIMCMD_FRAME(0x0004, 0x0004, 0x00, 0x3f),
     AFFINEANIMCMD_END,
 };
 
-static const union AffineAnimCmd sAffineAnim_Battler_TipRight[] =
+static const union AffineAnimCmd gUnknown_082FF600[] =
 {
-    AFFINEANIMCMD_FRAME(0x0, 0x0, -3, 5),
-    AFFINEANIMCMD_FRAME(0x0, 0x0,  3, 5),
+    AFFINEANIMCMD_FRAME(0x0000, 0x0000, 0xfd, 0x05),
+    AFFINEANIMCMD_FRAME(0x0000, 0x0000, 0x03, 0x05),
     AFFINEANIMCMD_END,
 };
 
 const union AffineAnimCmd *const gAffineAnims_BattleSpritePlayerSide[] =
 {
-    [BATTLER_AFFINE_NORMAL] = sAffineAnim_Battler_Normal,
-    [BATTLER_AFFINE_EMERGE] = sAffineAnim_Battler_Emerge,
-    [BATTLER_AFFINE_RETURN] = sAffineAnim_Battler_Return,
-    sAffineAnim_Battler_HorizontalSquishLoop,
-    sAffineAnim_Battler_Grow,
-    sAffineAnim_Battler_Shrink,
-    sAffineAnim_Battler_GrowLarge,
-    sAffineAnim_Battler_TipRight,
-    sAffineAnim_Battler_BigToSmall,
+    gUnknown_082FF548,
+    gUnknown_082FF568,
+    gUnknown_082FF580,
+    gUnknown_082FF598,
+    gUnknown_082FF5B8,
+    gUnknown_082FF5C8,
+    gUnknown_082FF5F0,
+    gUnknown_082FF600,
+    gUnknown_082FF5D8,
 };
 
-static const union AffineAnimCmd sAffineAnim_Battler_SpinShrink[] =
+static const union AffineAnimCmd gUnknown_082FF63C[] =
 {
-    AFFINEANIMCMD_FRAME(-0x4, -0x4, 4, 63),
+    AFFINEANIMCMD_FRAME(0xfffc, 0xfffc, 0x04, 0x3f),
     AFFINEANIMCMD_END,
 };
 
-static const union AffineAnimCmd sAffineAnim_Battler_TipLeft[] =
+static const union AffineAnimCmd gUnknown_082FF64C[] =
 {
-    AFFINEANIMCMD_FRAME(0x0, 0x0,  3, 5),
-    AFFINEANIMCMD_FRAME(0x0, 0x0, -3, 5),
+    AFFINEANIMCMD_FRAME(0x0000, 0x0000, 0x03, 0x05),
+    AFFINEANIMCMD_FRAME(0x0000, 0x0000, 0xfd, 0x05),
     AFFINEANIMCMD_END,
 };
 
-static const union AffineAnimCmd sAffineAnim_Battler_RotateUpAndBack[] =
+static const union AffineAnimCmd gUnknown_082FF664[] =
 {
-    AFFINEANIMCMD_FRAME(0x0, 0x0, -5, 20),
-    AFFINEANIMCMD_FRAME(0x0, 0x0,  0, 20),
-    AFFINEANIMCMD_FRAME(0x0, 0x0,  5, 20),
+    AFFINEANIMCMD_FRAME(0x0000, 0x0000, 0xfb, 0x14),
+    AFFINEANIMCMD_FRAME(0x0000, 0x0000, 0x00, 0x14),
+    AFFINEANIMCMD_FRAME(0x0000, 0x0000, 0x05, 0x14),
     AFFINEANIMCMD_END,
 };
 
-static const union AffineAnimCmd sAffineAnim_Battler_Spin[] =
+static const union AffineAnimCmd gUnknown_082FF684[] =
 {
-    AFFINEANIMCMD_FRAME(0x0, 0x0, 9, 110),
+    AFFINEANIMCMD_FRAME(0x0000, 0x0000, 0x09, 0x6e),
     AFFINEANIMCMD_END,
 };
 
 const union AffineAnimCmd *const gAffineAnims_BattleSpriteOpponentSide[] =
 {
-    [BATTLER_AFFINE_NORMAL] = sAffineAnim_Battler_Normal,
-    [BATTLER_AFFINE_EMERGE] = sAffineAnim_Battler_Emerge,
-    [BATTLER_AFFINE_RETURN] = sAffineAnim_Battler_Return,
-    sAffineAnim_Battler_HorizontalSquishLoop,
-    sAffineAnim_Battler_Grow,
-    sAffineAnim_Battler_Shrink,
-    sAffineAnim_Battler_SpinShrink,
-    sAffineAnim_Battler_TipLeft,
-    sAffineAnim_Battler_RotateUpAndBack,
-    sAffineAnim_Battler_BigToSmall,
-    sAffineAnim_Battler_Spin,
+    gUnknown_082FF548,
+    gUnknown_082FF568,
+    gUnknown_082FF580,
+    gUnknown_082FF598,
+    gUnknown_082FF5B8,
+    gUnknown_082FF5C8,
+    gUnknown_082FF63C,
+    gUnknown_082FF64C,
+    gUnknown_082FF664,
+    gUnknown_082FF5D8,
+    gUnknown_082FF684,
 };
 
-const union AffineAnimCmd *const gAffineAnims_BattleSpriteContest[] =
+const union AffineAnimCmd *const gUnknown_082FF6C0[] =
 {
-    [BATTLER_AFFINE_NORMAL] = sAffineAnim_Battler_Flipped,
-    [BATTLER_AFFINE_EMERGE] = sAffineAnim_Battler_Emerge,
-    [BATTLER_AFFINE_RETURN] = sAffineAnim_Battler_Return,
-    sAffineAnim_Battler_HorizontalSquishLoop,
-    sAffineAnim_Battler_Grow,
-    sAffineAnim_Battler_Shrink,
-    sAffineAnim_Battler_SpinShrink,
-    sAffineAnim_Battler_TipLeft,
-    sAffineAnim_Battler_RotateUpAndBack,
-    sAffineAnim_Battler_BigToSmall,
-    sAffineAnim_Battler_Spin,
+    gUnknown_082FF558,
+    gUnknown_082FF568,
+    gUnknown_082FF580,
+    gUnknown_082FF598,
+    gUnknown_082FF5B8,
+    gUnknown_082FF5C8,
+    gUnknown_082FF63C,
+    gUnknown_082FF64C,
+    gUnknown_082FF664,
+    gUnknown_082FF5D8,
+    gUnknown_082FF684,
 };
 
-
-static const union AnimCmd sAnim_MonPic_0[] =
+static const union AnimCmd gUnknown_082FF6EC[] =
 {
     ANIMCMD_FRAME(0, 0),
     ANIMCMD_END,
 };
 
-static const union AnimCmd sAnim_MonPic_1[] =
+static const union AnimCmd gUnknown_082FF6F4[] =
 {
     ANIMCMD_FRAME(1, 0),
     ANIMCMD_END,
 };
 
-static const union AnimCmd sAnim_MonPic_2[] =
+static const union AnimCmd gUnknown_082FF6FC[] =
 {
     ANIMCMD_FRAME(2, 0),
     ANIMCMD_END,
 };
 
-static const union AnimCmd sAnim_MonPic_3[] =
+static const union AnimCmd gUnknown_082FF704[] =
 {
     ANIMCMD_FRAME(3, 0),
     ANIMCMD_END,
 };
 
-const union AnimCmd *const gAnims_MonPic[MAX_MON_PIC_FRAMES] =
+const union AnimCmd *const gUnknown_082FF70C[] =
 {
-    sAnim_MonPic_0,
-    sAnim_MonPic_1,
-    sAnim_MonPic_2,
-    sAnim_MonPic_3,
+    gUnknown_082FF6EC,
+    gUnknown_082FF6F4,
+    gUnknown_082FF6FC,
+    gUnknown_082FF704,
 };
 
 #define SPECIES_SPRITE(species, sprite) [SPECIES_##species] = {sprite, MON_PIC_SIZE, SPECIES_##species}
 #define SPECIES_PAL(species, pal) [SPECIES_##species] = {pal, SPECIES_##species}
 #define SPECIES_SHINY_PAL(species, pal) [SPECIES_##species] = {pal, SPECIES_##species + SPECIES_SHINY_TAG}
 
+#include "data/pokemon_graphics/unknown_anims.h"
 #include "data/pokemon_graphics/front_pic_coordinates.h"
+#include "data/pokemon_graphics/still_front_pic_table.h"
 #include "data/pokemon_graphics/back_pic_coordinates.h"
 
 #include "data/pokemon_graphics/back_pic_table.h"
@@ -318,6 +313,120 @@ const union AnimCmd *const gAnims_MonPic[MAX_MON_PIC_FRAMES] =
 #include "data/pokemon_graphics/enemy_mon_elevation.h"
 #include "data/pokemon_graphics/front_pic_anims.h"
 #include "data/pokemon_graphics/front_pic_table.h"
+
+static const u32 sUnused[] =
+{
+    0x00000888, 0x00000888, 0x00000888, 0x00000888,
+    0x00000088, 0x00000888, 0x00000888, 0x00000886,
+    0x00000888, 0x00000886, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000888, 0x00000888,
+    0x00000886, 0x00000888, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000886, 0x00000886,
+    0x00000888, 0x00000088, 0x00000088, 0x00000088,
+    0x00000088, 0x00000888, 0x00000886, 0x00000888,
+    0x00000888, 0x00000888, 0x00000886, 0x00000886,
+    0x00000888, 0x00000088, 0x00000088, 0x00000088,
+    0x00000088, 0x00000886, 0x00000886, 0x00000088,
+    0x00000886, 0x00000886, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000888, 0x00000888,
+    0x00000886, 0x00000888, 0x00000088, 0x00000088,
+    0x00000888, 0x00000888, 0x00000888, 0x00000886,
+    0x00000888, 0x00000888, 0x00000888, 0x00000886,
+    0x00000886, 0x00000886, 0x00000886, 0x00000886,
+    0x00000886, 0x00000886, 0x00000888, 0x00000888,
+    0x00000886, 0x00000886, 0x00000886, 0x00000886,
+    0x00000886, 0x00000888, 0x00000888, 0x00000888,
+    0x00000888, 0x00000886, 0x00000886, 0x00000888,
+    0x00000886, 0x00000886, 0x00000888, 0x00000888,
+    0x00000088, 0x00000088, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000888, 0x00000888,
+    0x00000886, 0x00000886, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000088, 0x00000886,
+    0x00000888, 0x00000088, 0x00000088, 0x00000088,
+    0x00000088, 0x00000888, 0x00000886, 0x00000888,
+    0x00000088, 0x00000088, 0x00000886, 0x00000886,
+    0x00000088, 0x00000088, 0x00000888, 0x00000886,
+    0x00000886, 0x00000888, 0x00000888, 0x00000088,
+    0x00000888, 0x00000886, 0x00000886, 0x00000888,
+    0x00000886, 0x00000888, 0x00000888, 0x00000886,
+    0x00000888, 0x00000888, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000088, 0x00000888,
+    0x00000888, 0x00000888, 0x00000888, 0x00000888,
+    0x00000088, 0x00000888, 0x00000888, 0x00000886,
+    0x00000886, 0x00000888, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000888, 0x00000886,
+    0x00000888, 0x00000886, 0x00000088, 0x00000088,
+    0x00000088, 0x00000888, 0x00000088, 0x00000888,
+    0x00000888, 0x00000088, 0x00000088, 0x00000888,
+    0x00000886, 0x00000888, 0x00000886, 0x00000886,
+    0x00000886, 0x00000888, 0x00000888, 0x00000888,
+    0x00000088, 0x00000888, 0x00000888, 0x00000888,
+    0x00000088, 0x00000888, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000088, 0x00000088,
+    0x00000886, 0x00000888, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000088, 0x00000888,
+    0x00000886, 0x00000888, 0x00000088, 0x00000088,
+    0x00000888, 0x00000888, 0x00000088, 0x00000888,
+    0x00000888, 0x00000888, 0x00000888, 0x00000088,
+    0x00000888, 0x00000888, 0x00000088, 0x00000088,
+    0x00000088, 0x00000888, 0x00000088, 0x00000888,
+    0x00000888, 0x00000888, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000888, 0x00000888,
+    0x00000888, 0x00000886, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000888, 0x00000888,
+    0x00000888, 0x00000886, 0x00000886, 0x00000886,
+    0x00000088, 0x00000088, 0x00000088, 0x00000886,
+    0x00000088, 0x00000886, 0x00000886, 0x00000886,
+    0x00000088, 0x00000886, 0x00000088, 0x00000088,
+    0x00000088, 0x00000088, 0x00000088, 0x00000886,
+    0x00000886, 0x00000886, 0x00000888, 0x00000888,
+    0x00000886, 0x00000886, 0x00000886, 0x00000886,
+    0x00000088, 0x00000088, 0x00000886, 0x00000886,
+    0x00001882, 0x00000088, 0x00000088, 0x00000088,
+    0x00000088, 0x00000886, 0x00000886, 0x00000886,
+    0x00000088, 0x00000088, 0x00000088, 0x00000088,
+    0x00000886, 0x00000088, 0x00000886, 0x00000088,
+    0x00000088, 0x00000088, 0x00000088, 0x00000088,
+    0x00000088, 0x00000088, 0x00000886, 0x00000886,
+    0x00000088, 0x00000088, 0x00000088, 0x00000886,
+    0x00000886, 0x00000088, 0x00000088, 0x00000088,
+    0x00000088, 0x00000088, 0x00000088, 0x00000088,
+    0x00000088, 0x00000088, 0x00000088, 0x00000088,
+    0x00000088, 0x00000088, 0x00000886, 0x00000088,
+    0x00000088, 0x00000886, 0x00000886, 0x00000886,
+    0x00000886, 0x00000886, 0x00000088, 0x00000088,
+    0x00000088, 0x00000088, 0x00000088, 0x00000886,
+    0x00000886, 0x00000886, 0x00000886, 0x00000088,
+    0x00000886, 0x00000088, 0x00000886, 0x00000886,
+    0x00000886, 0x00000088, 0x00000088, 0x00000088,
+    0x00000088, 0x00000088, 0x00000088, 0x00000088,
+    0x00000088, 0x00000088, 0x00000886, 0x00000886,
+    0x00000886, 0x00000888, 0x00000886, 0x00000886,
+    0x00000088, 0x00000088, 0x00000088, 0x00000088,
+    0x00000886, 0x00000886, 0x00000088, 0x00000088,
+    0x00000088, 0x00000088, 0x00000088, 0x00000088,
+    0x00000088, 0x00000088, 0x00000088, 0x00000088,
+    0x00000088, 0x00000088, 0x00000088, 0x00000088,
+    0x00000088, 0x00000088, 0x00000088, 0x00000088,
+    0x00000088, 0x00000888, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000888, 0x00000888,
+    0x00000888, 0x00000888, 0x00000888, 0x00000888,
+};
 
 #include "data/trainer_parties.h"
 #include "data/text/trainer_class_names.h"

@@ -15,7 +15,6 @@
 #define TRAINER_LINK_OPPONENT               2048
 #define TRAINER_UNION_ROOM                  3072
 #define TRAINER_STEVEN_PARTNER              3075
-#define TRAINER_CUSTOM_PARTNER              3076
 
 #define TRAINER_PIC_HIKER                  0
 #define TRAINER_PIC_AQUA_GRUNT_M           1
@@ -111,7 +110,6 @@
 #define TRAINER_PIC_RS_BRENDAN            91
 #define TRAINER_PIC_RS_MAY                92
 
-// The player back pics are assumed to alternate according to the gender values (MALE/FEMALE)
 #define TRAINER_BACK_PIC_BRENDAN                0
 #define TRAINER_BACK_PIC_MAY                    1
 #define TRAINER_BACK_PIC_RED                    2
@@ -336,7 +334,7 @@
 #define TRAINER_CLASS_SAILOR         0x2f
 #define TRAINER_CLASS_COOLTRAINER_2  0x30 // Used for only one trainer.
 #define TRAINER_CLASS_MAGMA_ADMIN    0x31
-#define TRAINER_CLASS_RIVAL          0x32
+#define TRAINER_CLASS_PKMN_TRAINER_3 0x32
 #define TRAINER_CLASS_BUG_CATCHER    0x33
 #define TRAINER_CLASS_PKMN_RANGER    0x34
 #define TRAINER_CLASS_MAGMA_LEADER   0x35
@@ -352,7 +350,6 @@
 #define TRAINER_CLASS_PIKE_QUEEN     0x3f
 #define TRAINER_CLASS_PYRAMID_KING   0x40
 #define TRAINER_CLASS_RS_PROTAG      0x41
-#define TRAINER_CLASS_COUNT          0x42
 
 #define TRAINER_ENCOUNTER_MUSIC_MALE         0 // standard male encounter music
 #define TRAINER_ENCOUNTER_MUSIC_FEMALE       1 // standard female encounter music
@@ -374,12 +371,7 @@
 // All trainer parties specify the IV, level, and species for each Pokémon in the
 // party. Some trainer parties also specify held items and custom moves for each
 // Pokémon.
-#define F_TRAINER_PARTY_CUSTOM_MOVESET        (1 << 0)
-#define F_TRAINER_PARTY_HELD_ITEM             (1 << 1)
-#define F_TRAINER_PARTY_EVERYTHING_CUSTOMIZED (1 << 3)
-
-// Trainer party defines
-#define TRAINER_MON_MALE    1
-#define TRAINER_MON_FEMALE  2
+#define F_TRAINER_PARTY_CUSTOM_MOVESET (1 << 0)
+#define F_TRAINER_PARTY_HELD_ITEM      (1 << 1)
 
 #endif  // GUARD_TRAINERS_H

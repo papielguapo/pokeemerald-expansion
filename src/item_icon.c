@@ -18,7 +18,7 @@ static const struct OamData sOamData_ItemIcon =
     .y = 0,
     .affineMode = ST_OAM_AFFINE_OFF,
     .objMode = ST_OAM_OBJ_NORMAL,
-    .mosaic = FALSE,
+    .mosaic = 0,
     .bpp = ST_OAM_4BPP,
     .shape = SPRITE_SHAPE(32x32),
     .x = 0,
@@ -159,8 +159,8 @@ u8 AddCustomItemIconSprite(const struct SpriteTemplate *customSpriteTemplate, u1
 
 const void *GetItemIconPicOrPalette(u16 itemId, u8 which)
 {
-    if (itemId == ITEM_LIST_END)
-        itemId = ITEMS_COUNT; // Use last icon, the "return to field" arrow
+    if (itemId == 0xFFFF)
+        itemId = ITEM_FIELD_ARROW;
     else if (itemId >= ITEMS_COUNT)
         itemId = 0;
 

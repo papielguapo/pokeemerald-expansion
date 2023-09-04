@@ -65,7 +65,7 @@ void EnterSafariMode(void)
 
 void ExitSafariMode(void)
 {
-    TryPutSafariFanClubOnAir(sSafariZoneCaughtMons, sSafariZonePkblkUses);
+    sub_80EE44C(sSafariZoneCaughtMons, sSafariZonePkblkUses);
     ResetSafariZoneFlag();
     ClearAllPokeblockFeeders();
     gNumSafariBalls = 0;
@@ -83,7 +83,7 @@ bool8 SafariZoneTakeStep(void)
     sSafariZoneStepCounter--;
     if (sSafariZoneStepCounter == 0)
     {
-        ScriptContext_SetupScript(SafariZone_EventScript_TimesUp);
+        ScriptContext1_SetupScript(SafariZone_EventScript_TimesUp);
         return TRUE;
     }
     return FALSE;
@@ -91,7 +91,7 @@ bool8 SafariZoneTakeStep(void)
 
 void SafariZoneRetirePrompt(void)
 {
-    ScriptContext_SetupScript(SafariZone_EventScript_RetirePrompt);
+    ScriptContext1_SetupScript(SafariZone_EventScript_RetirePrompt);
 }
 
 void CB2_EndSafariBattle(void)
@@ -105,15 +105,15 @@ void CB2_EndSafariBattle(void)
     }
     else if (gBattleOutcome == B_OUTCOME_NO_SAFARI_BALLS)
     {
-        RunScriptImmediately(SafariZone_EventScript_OutOfBallsMidBattle);
+        ScriptContext2_RunNewScript(SafariZone_EventScript_OutOfBallsMidBattle);
         WarpIntoMap();
         gFieldCallback = FieldCB_ReturnToFieldNoScriptCheckMusic;
         SetMainCallback2(CB2_LoadMap);
     }
     else if (gBattleOutcome == B_OUTCOME_CAUGHT)
     {
-        ScriptContext_SetupScript(SafariZone_EventScript_OutOfBalls);
-        ScriptContext_Stop();
+        ScriptContext1_SetupScript(SafariZone_EventScript_OutOfBalls);
+        ScriptContext1_Stop();
         SetMainCallback2(CB2_ReturnToFieldContinueScriptPlayMapMusic);
     }
 }
@@ -133,7 +133,7 @@ void GetPokeblockFeederInFront(void)
     s16 x, y;
     u16 i;
 
-    GetXYCoordsOneStepInFrontOfPlayer(&x, &y);
+    GetXYCoordsOneStepInFrontOfPlayerNonDiagonal(&x, &y);
 
     for (i = 0; i < NUM_POKEBLOCK_FEEDERS; i++)
     {
@@ -213,7 +213,7 @@ void SafariZoneActivatePokeblockFeeder(u8 pkblId)
          && sPokeblockFeeders[i].y == 0)
         {
             // Initialize Pokeblock feeder
-            GetXYCoordsOneStepInFrontOfPlayer(&x, &y);
+            GetXYCoordsOneStepInFrontOfPlayerNonDiagonal(&x, &y);
             sPokeblockFeeders[i].mapNum = gSaveBlock1Ptr->location.mapNum;
             sPokeblockFeeders[i].pokeblock = gSaveBlock1Ptr->pokeblocks[pkblId];
             sPokeblockFeeders[i].stepCounter = 100;
