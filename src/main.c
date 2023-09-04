@@ -31,9 +31,6 @@ static void VCountIntr(void);
 static void SerialIntr(void);
 static void IntrDummy(void);
 
-// Defined in the linker script so that the test build can override it.
-extern void gInitialMainCB2(void);
-
 const u8 gGameVersion = GAME_VERSION;
 
 const u8 gGameLanguage = GAME_LANGUAGE; // English
@@ -71,7 +68,6 @@ IntrFunc gIntrTable[INTR_COUNT];
 u8 gLinkVSyncDisabled;
 u32 IntrMain_Buffer[0x200];
 s8 gPcmDmaCounter;
-void *gAgbMainLoop_sp;
 
 static EWRAM_DATA u16 sTrainerId = 0;
 
@@ -130,12 +126,6 @@ void AgbMain()
     AGBPrintfInit();
 #endif
 #endif
-    gAgbMainLoop_sp = __builtin_frame_address(0);
-    AgbMainLoop();
-}
-
-void AgbMainLoop(void)
-{
     for (;;)
     {
         ReadKeys();
@@ -188,7 +178,7 @@ static void InitMainCallbacks(void)
     gTrainerHillVBlankCounter = NULL;
     gMain.vblankCounter2 = 0;
     gMain.callback1 = NULL;
-    SetMainCallback2(gInitialMainCB2);
+    SetMainCallback2(CB2_InitCopyrightScreenAfterBootup);
     gSaveBlock2Ptr = &gSaveblock2.block;
     gPokemonStoragePtr = &gPokemonStorage.block;
 }
@@ -418,7 +408,9 @@ static void IntrDummy(void)
 static void WaitForVBlank(void)
 {
     gMain.intrCheck &= ~INTR_FLAG_VBLANK;
-    VBlankIntrWait();
+
+    while (!(gMain.intrCheck & INTR_FLAG_VBLANK))
+        ;
 }
 
 void SetTrainerHillVBlankCounter(u32 *counter)

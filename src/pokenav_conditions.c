@@ -348,7 +348,7 @@ static u8 *CopyConditionMonNameGender(u8 *str, u16 listId, bool8 skipPadding)
     *(str++) = TEXT_COLOR_LIGHT_BLUE;
 
     if (GetBoxOrPartyMonData(boxId, monId, MON_DATA_IS_EGG, NULL))
-        return StringCopyPadded(str, gText_EggNickname, CHAR_SPACE, 12);
+        return StringCopyPadded(str, gText_EggNickname, CHAR_SPACE, POKEMON_NAME_LENGTH + 2);
 
     GetBoxOrPartyMonData(boxId, monId, MON_DATA_NICKNAME, str);
     StringGet_Nickname(str);
@@ -445,7 +445,7 @@ static void CopyMonNameGenderLocation(s16 listId, u8 loadId)
     }
     else
     {
-        for (i = 0; i < 12; i++)
+        for (i = 0; i < POKEMON_NAME_LENGTH + 2; i++)
             menu->nameText[loadId][i] = CHAR_SPACE;
         menu->nameText[loadId][i] = EOS;
 
@@ -534,7 +534,7 @@ static void ConditionGraphDrawMonPic(s16 listId, u8 loadId)
     species = GetBoxOrPartyMonData(boxId, monId, MON_DATA_SPECIES_OR_EGG, NULL);
     tid = GetBoxOrPartyMonData(boxId, monId, MON_DATA_OT_ID, NULL);
     personality = GetBoxOrPartyMonData(boxId, monId, MON_DATA_PERSONALITY, NULL);
-    LoadSpecialPokePic(menu->monPicGfx[loadId], species, personality, TRUE);
+    LoadSpecialPokePic(&gMonFrontPicTable[species], menu->monPicGfx[loadId], species, personality, TRUE);
     LZ77UnCompWram(GetMonSpritePalFromSpeciesAndPersonality(species, tid, personality), menu->monPal[loadId]);
 }
 

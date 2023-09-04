@@ -1,18 +1,37 @@
 #include "global.h"
-#include "malloc.h"
 
 static void *sHeapStart;
 static u32 sHeapSize;
+
+#define MALLOC_SYSTEM_ID 0xA3A3
+
+struct MemBlock {
+    // Whether this block is currently allocated.
+    bool16 flag;
+
+    // Magic number used for error checking. Should equal MALLOC_SYSTEM_ID.
+    u16 magic;
+
+    // Size of the block (not including this header struct).
+    u32 size;
+
+    // Previous block pointer. Equals sHeapStart if this is the first block.
+    struct MemBlock *prev;
+
+    // Next block pointer. Equals sHeapStart if this is the last block.
+    struct MemBlock *next;
+
+    // Data in the memory block. (Arrays of length 0 are a GNU extension.)
+    u8 data[0];
+};
 
 void PutMemBlockHeader(void *block, struct MemBlock *prev, struct MemBlock *next, u32 size)
 {
     struct MemBlock *header = (struct MemBlock *)block;
 
-    header->allocated = FALSE;
-    header->locationHi = 0;
+    header->flag = FALSE;
     header->magic = MALLOC_SYSTEM_ID;
     header->size = size;
-    header->locationLo = 0;
     header->prev = prev;
     header->next = next;
 }
@@ -22,7 +41,7 @@ void PutFirstMemBlockHeader(void *block, u32 size)
     PutMemBlockHeader(block, (struct MemBlock *)block, (struct MemBlock *)block, size - sizeof(struct MemBlock));
 }
 
-void *AllocInternal(void *heapStart, u32 size, const char *location)
+void *AllocInternal(void *heapStart, u32 size)
 {
     struct MemBlock *pos = (struct MemBlock *)heapStart;
     struct MemBlock *head = pos;
@@ -36,14 +55,14 @@ void *AllocInternal(void *heapStart, u32 size, const char *location)
     for (;;) {
         // Loop through the blocks looking for unused block that's big enough.
 
-        if (!pos->allocated) {
+        if (!pos->flag) {
             foundBlockSize = pos->size;
 
             if (foundBlockSize >= size) {
                 if (foundBlockSize - size < 2 * sizeof(struct MemBlock)) {
                     // The block isn't much bigger than the requested size,
                     // so just use it.
-                    pos->allocated = TRUE;
+                    pos->flag = TRUE;
                 } else {
                     // The block is significantly bigger than the requested
                     // size, so split the rest into a separate block.
@@ -52,7 +71,7 @@ void *AllocInternal(void *heapStart, u32 size, const char *location)
 
                     splitBlock = (struct MemBlock *)(pos->data + size);
 
-                    pos->allocated = TRUE;
+                    pos->flag = TRUE;
                     pos->size = size;
 
                     PutMemBlockHeader(splitBlock, pos, pos->next, foundBlockSize);
@@ -62,9 +81,6 @@ void *AllocInternal(void *heapStart, u32 size, const char *location)
                     if (splitBlock->next != head)
                         splitBlock->next->prev = splitBlock;
                 }
-
-                pos->locationHi = ((uintptr_t)location) >> 14;
-                pos->locationLo = (uintptr_t)location;
 
                 return pos->data;
             }
@@ -82,12 +98,12 @@ void FreeInternal(void *heapStart, void *pointer)
     if (pointer) {
         struct MemBlock *head = (struct MemBlock *)heapStart;
         struct MemBlock *block = (struct MemBlock *)((u8 *)pointer - sizeof(struct MemBlock));
-        block->allocated = FALSE;
+        block->flag = FALSE;
 
         // If the freed block isn't the last one, merge with the next block
         // if it's not in use.
         if (block->next != head) {
-            if (!block->next->allocated) {
+            if (!block->next->flag) {
                 block->size += sizeof(struct MemBlock) + block->next->size;
                 block->next->magic = 0;
                 block->next = block->next->next;
@@ -99,7 +115,7 @@ void FreeInternal(void *heapStart, void *pointer)
         // If the freed block isn't the first one, merge with the previous block
         // if it's not in use.
         if (block != head) {
-            if (!block->prev->allocated) {
+            if (!block->prev->flag) {
                 block->prev->next = block->next;
 
                 if (block->next != head)
@@ -112,9 +128,9 @@ void FreeInternal(void *heapStart, void *pointer)
     }
 }
 
-void *AllocZeroedInternal(void *heapStart, u32 size, const char *location)
+void *AllocZeroedInternal(void *heapStart, u32 size)
 {
-    void *mem = AllocInternal(heapStart, size, location);
+    void *mem = AllocInternal(heapStart, size);
 
     if (mem != NULL) {
         if (size & 3)
@@ -159,14 +175,14 @@ void InitHeap(void *heapStart, u32 heapSize)
     PutFirstMemBlockHeader(heapStart, heapSize);
 }
 
-void *Alloc_(u32 size, const char *location)
+void *Alloc(u32 size)
 {
-    return AllocInternal(sHeapStart, size, location);
+    return AllocInternal(sHeapStart, size);
 }
 
-void *AllocZeroed_(u32 size, const char *location)
+void *AllocZeroed(u32 size)
 {
-    return AllocZeroedInternal(sHeapStart, size, location);
+    return AllocZeroedInternal(sHeapStart, size);
 }
 
 void Free(void *pointer)
@@ -190,17 +206,4 @@ bool32 CheckHeap()
     } while (pos != (struct MemBlock *)sHeapStart);
 
     return TRUE;
-}
-
-const struct MemBlock *HeapHead(void)
-{
-    return (const struct MemBlock *)sHeapStart;
-}
-
-const char *MemBlockLocation(const struct MemBlock *block)
-{
-    if (!block->allocated)
-        return NULL;
-
-    return (const char *)(ROM_START | (block->locationHi << 14) | block->locationLo);
 }

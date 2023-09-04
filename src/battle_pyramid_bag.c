@@ -1299,18 +1299,11 @@ static void TryCloseBagToGiveItem(u8 taskId)
 
 static void BagAction_UseInBattle(u8 taskId)
 {
-    // Safety check
-    u16 type = ItemId_GetType(gSpecialVar_ItemId);
-    if (!ItemId_GetBattleUsage(gSpecialVar_ItemId))
-        return;
-
-    CloseMenuActionWindow();
-    if (type == ITEM_USE_BAG_MENU)
-        ItemUseInBattle_BagMenu(taskId);
-    else if (type == ITEM_USE_PARTY_MENU)
-        ItemUseInBattle_PartyMenu(taskId);
-    else if (type == ITEM_USE_PARTY_MENU_MOVES)
-        ItemUseInBattle_PartyMenuChooseMove(taskId);
+    if (ItemId_GetBattleFunc(gSpecialVar_ItemId) != NULL)
+    {
+        CloseMenuActionWindow();
+        ItemId_GetBattleFunc(gSpecialVar_ItemId)(taskId);
+    }
 }
 
 static void Task_BeginItemSwap(u8 taskId)

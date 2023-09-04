@@ -1546,7 +1546,7 @@ static void SetOpponentsBerryData(u16 playerBerryItemId, u8 playersNum, struct B
     u16 berryMasterDiff;
     u16 i;
 
-    if (playerBerryItemId == ITEM_ENIGMA_BERRY_E_READER)
+    if (playerBerryItemId == ITEM_ENIGMA_BERRY)
     {
         for (i = 0; i < FLAVOR_COUNT; i++)
         {
@@ -2294,7 +2294,7 @@ static u32 CalculatePokeblockColor(struct BlenderBerry* berries, s16 *_flavors, 
         for (j = 0; j < numPlayers; j++)
         {
             if (berries[i].itemId == berries[j].itemId && i != j
-                && (berries[i].itemId != ITEM_ENIGMA_BERRY_E_READER || AreBlenderBerriesSame(berries, i, j)))
+                && (berries[i].itemId != ITEM_ENIGMA_BERRY || AreBlenderBerriesSame(berries, i, j)))
                     return PBLOCK_CLR_BLACK;
         }
     }
@@ -3109,10 +3109,10 @@ static void DrawBlenderCenter(struct BgAffineSrcData *dest)
 {
     struct BgAffineSrcData affineSrc;
 
-    affineSrc.texX = 0x7800;
-    affineSrc.texY = 0x5000;
-    affineSrc.scrX = 0x78 - sBerryBlender->bg_X;
-    affineSrc.scrY = 0x50 - sBerryBlender->bg_Y;
+    affineSrc.texX = (DISPLAY_WIDTH / 2) << 8;
+    affineSrc.texY = (DISPLAY_HEIGHT / 2) << 8;
+    affineSrc.scrX = DISPLAY_WIDTH / 2 - sBerryBlender->bg_X;
+    affineSrc.scrY = DISPLAY_HEIGHT / 2 - sBerryBlender->bg_Y;
     affineSrc.sx = sBerryBlender->centerScale;
     affineSrc.sy = sBerryBlender->centerScale;
     affineSrc.alpha = sBerryBlender->arrowPos;

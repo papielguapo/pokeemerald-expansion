@@ -708,7 +708,7 @@ static void ClearInWildMonRoom(void)
 static void SavePikeChallenge(void)
 {
     gSaveBlock2Ptr->frontier.challengeStatus = gSpecialVar_0x8005;
-    VarSet(VAR_TEMP_0, 0);
+    VarSet(VAR_TEMP_CHALLENGE_STATUS, 0);
     gSaveBlock2Ptr->frontier.challengePaused = TRUE;
     SaveMapView();
     TrySavingData(SAVE_LINK);
@@ -729,7 +729,6 @@ static void GetRoomInflictedStatus(void)
     switch (sStatusFlags)
     {
     case STATUS1_FREEZE:
-    case STATUS1_FROSTBITE:
         gSpecialVar_Result = PIKE_STATUS_FREEZE;
         break;
     case STATUS1_BURN:
@@ -810,21 +809,17 @@ static void HealMon(struct Pokemon *mon)
 
 static bool8 DoesAbilityPreventStatus(struct Pokemon *mon, u32 status)
 {
-    u16 ability = GetMonAbility(mon);
+    u8 ability = GetMonAbility(mon);
     bool8 ret = FALSE;
-
-    if (ability == ABILITY_COMATOSE)
-        return TRUE;
 
     switch (status)
     {
     case STATUS1_FREEZE:
-    case STATUS1_FROSTBITE:
         if (ability == ABILITY_MAGMA_ARMOR)
             ret = TRUE;
         break;
     case STATUS1_BURN:
-        if (ability == ABILITY_WATER_VEIL || ability == ABILITY_WATER_BUBBLE)
+        if (ability == ABILITY_WATER_VEIL)
             ret = TRUE;
         break;
     case STATUS1_PARALYSIS:
@@ -836,7 +831,7 @@ static bool8 DoesAbilityPreventStatus(struct Pokemon *mon, u32 status)
             ret = TRUE;
         break;
     case STATUS1_TOXIC_POISON:
-        if (ability == ABILITY_IMMUNITY || ability == ABILITY_PASTEL_VEIL)
+        if (ability == ABILITY_IMMUNITY)
             ret = TRUE;
         break;
     }
@@ -855,16 +850,12 @@ static bool8 DoesTypePreventStatus(u16 species, u32 status)
             ret = TRUE;
         break;
     case STATUS1_FREEZE:
-    case STATUS1_FROSTBITE:
         if (gSpeciesInfo[species].types[0] == TYPE_ICE || gSpeciesInfo[species].types[1] == TYPE_ICE)
             ret = TRUE;
         break;
     case STATUS1_PARALYSIS:
-        if (gSpeciesInfo[species].types[0] == TYPE_GROUND || gSpeciesInfo[species].types[1] == TYPE_GROUND
-        #if B_PARALYZE_ELECTRIC >= GEN_6
-            || gSpeciesInfo[species].types[0] == TYPE_ELECTRIC || gSpeciesInfo[species].types[1] == TYPE_ELECTRIC
-        #endif
-        )
+        if (gSpeciesInfo[species].types[0] == TYPE_GROUND || gSpeciesInfo[species].types[0] == TYPE_ELECTRIC
+            || gSpeciesInfo[species].types[1] == TYPE_GROUND || gSpeciesInfo[species].types[1] == TYPE_ELECTRIC)
             ret = TRUE;
         break;
     case STATUS1_BURN:
@@ -916,11 +907,7 @@ static bool8 TryInflictRandomStatus(void)
         if (rand < 35)
             sStatusFlags = STATUS1_TOXIC_POISON;
         else if (rand < 60)
-        #if B_USE_FROSTBITE == TRUE
-            sStatusFlags = STATUS1_FROSTBITE;
-        #else
             sStatusFlags = STATUS1_FREEZE;
-        #endif
         else if (rand < 80)
             sStatusFlags = STATUS1_PARALYSIS;
         else if (rand < 90)
@@ -957,7 +944,6 @@ static bool8 TryInflictRandomStatus(void)
     switch (sStatusFlags)
     {
     case STATUS1_FREEZE:
-    case STATUS1_FROSTBITE:
         sStatusMon = PIKE_STATUSMON_DUSCLOPS;
         break;
     case STATUS1_BURN:
@@ -1281,6 +1267,10 @@ static void TryHealMons(u8 healCount)
 
     for (i = 0; i < FRONTIER_PARTY_SIZE; i++)
         indices[i] = i;
+
+    // Only 'healCount' number of pokemon will be healed.
+    // The order in which they're (attempted to be) healed is random,
+    // and determined by performing 10 random swaps to this index array.
     for (k = 0; k < 10; k++)
     {
         u8 temp;
@@ -1437,6 +1427,7 @@ static void PrepareTwoTrainers(void)
     gFacilityTrainers = gBattleFrontierTrainers;
     do
     {
+        // Pick the 1st trainer, making sure it's not one that's been encountered yet in this challenge.
         trainerId = GetRandomScaledFrontierTrainerId(challengeNum, 1);
         for (i = 0; i < gSaveBlock2Ptr->frontier.curChallengeBattleNum - 1; i++)
         {
@@ -1452,6 +1443,7 @@ static void PrepareTwoTrainers(void)
 
     do
     {
+        // Pick the 2nd trainer, making sure it's not one that's been encountered yet in this challenge.
         trainerId = GetRandomScaledFrontierTrainerId(challengeNum, 1);
         for (i = 0; i < gSaveBlock2Ptr->frontier.curChallengeBattleNum; i++)
         {
@@ -1638,7 +1630,7 @@ static bool8 CanEncounterWildMon(u8 enemyMonLevel)
 {
     if (!GetMonData(&gPlayerParty[0], MON_DATA_SANITY_IS_EGG))
     {
-        u16 monAbility = GetMonAbility(&gPlayerParty[0]);
+        u8 monAbility = GetMonAbility(&gPlayerParty[0]);
         if (monAbility == ABILITY_KEEN_EYE || monAbility == ABILITY_INTIMIDATE)
         {
             u8 playerMonLevel = GetMonData(&gPlayerParty[0], MON_DATA_LEVEL);
