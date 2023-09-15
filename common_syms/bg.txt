@@ -1,1 +1,1 @@
-gWindowTileAutoAllocEnabled
+gUnneededFireRedVariable

@@ -79,13 +79,11 @@ SUPER_RE    = A0
 '?'         = AC
 '.'         = AD
 '-'         = AE
-'_'         = AE @ For autogenerating strings based on label names. Not using {UNDERSCORE} on purpose due to how bad it looks.
 '·'         = AF
 '…'         = B0
 '“'         = B1
 '”'         = B2
 '‘'         = B3
-'’'         = B4
 '\''         = B4
 '♂'         = B5
 '♀'         = B6
@@ -402,15 +400,6 @@ B_TRAINER2_WIN_TEXT = FD 31
 B_PARTNER_CLASS = FD 32
 B_PARTNER_NAME = FD 33
 B_BUFF3 = FD 34
-B_ATK_TRAINER_NAME = FD 35
-B_ATK_TRAINER_CLASS = FD 36
-B_ATK_TEAM1 = FD 37
-B_ATK_TEAM2 = FD 38
-B_DEF_NAME = FD 39
-B_DEF_TEAM1 = FD 3A
-B_DEF_TEAM2 = FD 3B
-B_ACTIVE_NAME = FD 3C
-B_ACTIVE_NAME2 = FD 3D @ no Illusion check
 
 @ indicates the end of a town/city name (before " TOWN" or " CITY")
 NAME_END = FC 00
@@ -425,14 +414,14 @@ HIGHLIGHT = FC 02 @ same as fc 01
 SHADOW = FC 03 @ same as fc 01
 COLOR_HIGHLIGHT_SHADOW = FC 04 @ takes 3 bytes
 PALETTE = FC 05 @ used in credits
-FONT = FC 06 @ Given a font id, or use font constants below instead
-RESET_FONT = FC 07
+SIZE = FC 06 @ note that anything other than "SMALL" is invalid
+RESET_SIZE = FC 07
 PAUSE = FC 08 @ manually print the wait byte after this, havent mapped them
 PAUSE_UNTIL_PRESS = FC 09
 WAIT_SE = FC 0A
 PLAY_BGM = FC 0B
 ESCAPE = FC 0C
-SHIFT_RIGHT = FC 0D
+SHIFT_TEXT = FC 0D
 SHIFT_DOWN = FC 0E
 FILL_WINDOW = FC 0F
 PLAY_SE = FC 10
@@ -444,14 +433,6 @@ JPN = FC 15
 ENG = FC 16
 PAUSE_MUSIC = FC 17
 RESUME_MUSIC = FC 18
-
-@ fonts
-
-FONT_SMALL = FC 06 00
-FONT_NORMAL = FC 06 01
-FONT_SHORT = FC 06 02
-FONT_NARROW = FC 06 07
-FONT_SMALL_NARROW = FC 06 08
 
 @ colors
 
@@ -805,7 +786,7 @@ MUS_LITTLEROOT = 95 01
 MUS_MT_CHIMNEY = 96 01
 MUS_ENCOUNTER_FEMALE = 97 01
 MUS_LILYCOVE = 98 01
-MUS_DESERT = 99 01
+MUS_ROUTE111 = 99 01
 MUS_HELP = 9A 01
 MUS_UNDERWATER = 9B 01
 MUS_VICTORY_TRAINER = 9C 01

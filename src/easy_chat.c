@@ -15,7 +15,7 @@
 #include "graphics.h"
 #include "international_string_util.h"
 #include "main.h"
-#include "mystery_gift.h"
+#include "mevent.h"
 #include "menu.h"
 #include "overworld.h"
 #include "palette.h"
@@ -27,6 +27,7 @@
 #include "task.h"
 #include "text_window.h"
 #include "window.h"
+#include "constants/easy_chat.h"
 #include "constants/event_objects.h"
 #include "constants/lilycove_lady.h"
 #include "constants/mauville_old_man.h"
@@ -226,23 +227,18 @@ static void DoQuizQuestionEasyChatScreen(void);
 static void DoQuizSetAnswerEasyChatScreen(void);
 static void DoQuizSetQuestionEasyChatScreen(void);
 
-enum {
-    PALTAG_TRIANGLE_CURSOR,
-    PALTAG_RECTANGLE_CURSOR,
-    PALTAG_MISC_UI,
-    PALTAG_RS_INTERVIEW_FRAME,
-};
+#define PALTAG_TRIANGLE_CURSOR 0
+#define PALTAG_RECTANGLE_CURSOR 1
+#define PALTAG_MISC_UI 2
+#define PALTAG_RS_INTERVIEW_FRAME 3
 
-enum {
-    GFXTAG_TRIANGLE_CURSOR,
-    GFXTAG_RECTANGLE_CURSOR,
-    GFXTAG_SCROLL_INDICATOR,
-    GFXTAG_START_SELECT_BUTTONS,
-    GFXTAG_MODE_WINDOW,
-    GFXTAG_RS_INTERVIEW_FRAME,
-    GFXTAG_BUTTON_WINDOW,
-};
-
+#define GFXTAG_TRIANGLE_CURSOR 0
+#define GFXTAG_RECTANGLE_CURSOR 1
+#define GFXTAG_SCROLL_INDICATOR 2
+#define GFXTAG_START_SELECT_BUTTONS 3
+#define GFXTAG_MODE_WINDOW 4
+#define GFXTAG_RS_INTERVIEW_FRAME 5
+#define GFXTAG_BUTTON_WINDOW 6
 
 // State values for sEasyChatScreen->inputState
 // Control which input handler to use in HandleEasyChatInput
@@ -379,13 +375,6 @@ enum {
     WINANIM_RETURN_TO_KEYBOARD,
     WINANIM_KEYBOARD_SWITCH_OUT,
     WINANIM_KEYBOARD_SWITCH_IN,
-};
-
-// Window IDs
-enum {
-    WIN_TITLE,
-    WIN_MSG,
-    WIN_INPUT_SELECT, // Word groups, word list, and keyboard
 };
 
 // Values for text frame tilemap
@@ -826,7 +815,7 @@ static const struct BgTemplate sEasyChatBgTemplates[] = {
 };
 
 static const struct WindowTemplate sEasyChatWindowTemplates[] = {
-    [WIN_TITLE] = {
+    {
         .bg = 1,
         .tilemapLeft = 6,
         .tilemapTop = 0,
@@ -835,7 +824,7 @@ static const struct WindowTemplate sEasyChatWindowTemplates[] = {
         .paletteNum = 10,
         .baseBlock = 0x10,
     },
-    [WIN_MSG] = {
+    {
         .bg = 0,
         .tilemapLeft = 3,
         .tilemapTop = 15,
@@ -844,7 +833,7 @@ static const struct WindowTemplate sEasyChatWindowTemplates[] = {
         .paletteNum = 15,
         .baseBlock = 0xA,
     },
-    [WIN_INPUT_SELECT] = {
+    {
         .bg = 2,
         .tilemapLeft = 1,
         .tilemapTop = 0,
@@ -868,7 +857,7 @@ static const struct WindowTemplate sEasyChatYesNoWindowTemplate = {
 
 static const u8 sText_Clear17[] = _("{CLEAR 17}");
 
-static const u8 *const sEasyChatKeyboardAlphabet[NUM_ALPHABET_ROWS] =
+static const u8 *const sEasyChatKeyboardAlphabet[NUM_ALPHABET_ROWS] = 
 {
     gText_EasyChatKeyboard_ABCDEFothers,
     gText_EasyChatKeyboard_GHIJKL,
@@ -879,17 +868,17 @@ static const u8 *const sEasyChatKeyboardAlphabet[NUM_ALPHABET_ROWS] =
 static const struct SpriteSheet sSpriteSheets[] = {
     {
         .data = sTriangleCursor_Gfx,
-        .size = sizeof(sTriangleCursor_Gfx),
+        .size = 0x20,
         .tag = GFXTAG_TRIANGLE_CURSOR
     },
     {
         .data = sScrollIndicator_Gfx,
-        .size = sizeof(sScrollIndicator_Gfx),
+        .size = 0x100,
         .tag = GFXTAG_SCROLL_INDICATOR
     },
     {
         .data = sStartSelectButtons_Gfx,
-        .size = sizeof(sStartSelectButtons_Gfx),
+        .size = 0x100,
         .tag = GFXTAG_START_SELECT_BUTTONS
     },
     {0}
@@ -944,7 +933,7 @@ static const struct OamData sOamData_TriangleCursor = {
     .y = 0,
     .affineMode = ST_OAM_AFFINE_OFF,
     .objMode = ST_OAM_OBJ_NORMAL,
-    .mosaic = FALSE,
+    .mosaic = 0,
     .bpp = ST_OAM_4BPP,
     .shape = SPRITE_SHAPE(8x8),
     .x = 0,
@@ -956,8 +945,7 @@ static const struct OamData sOamData_TriangleCursor = {
     .affineParam = 0,
 };
 
-static const struct SpriteTemplate sSpriteTemplate_TriangleCursor =
-{
+static const struct SpriteTemplate sSpriteTemplate_TriangleCursor = {
     .tileTag = PALTAG_TRIANGLE_CURSOR,
     .paletteTag = GFXTAG_TRIANGLE_CURSOR,
     .oam = &sOamData_TriangleCursor,
@@ -971,7 +959,7 @@ static const struct OamData sOamData_RectangleCursor = {
     .y = 0,
     .affineMode = ST_OAM_AFFINE_OFF,
     .objMode = ST_OAM_OBJ_NORMAL,
-    .mosaic = FALSE,
+    .mosaic = 0,
     .bpp = ST_OAM_4BPP,
     .shape = SPRITE_SHAPE(64x32),
     .x = 0,
@@ -1018,8 +1006,7 @@ static const union AnimCmd *const sAnims_RectangleCursor[] = {
     [RECTCURSOR_ANIM_ON_LETTER] = sAnim_RectangleCursor_OnLetter,
 };
 
-static const struct SpriteTemplate sSpriteTemplate_RectangleCursor =
-{
+static const struct SpriteTemplate sSpriteTemplate_RectangleCursor = {
     .tileTag = GFXTAG_RECTANGLE_CURSOR,
     .paletteTag = PALTAG_RECTANGLE_CURSOR,
     .oam = &sOamData_RectangleCursor,
@@ -1033,7 +1020,7 @@ static const struct OamData sOamData_ModeWindow = {
     .y = 0,
     .affineMode = ST_OAM_AFFINE_OFF,
     .objMode = ST_OAM_OBJ_NORMAL,
-    .mosaic = FALSE,
+    .mosaic = 0,
     .bpp = ST_OAM_4BPP,
     .shape = SPRITE_SHAPE(64x32),
     .x = 0,
@@ -1089,8 +1076,7 @@ static const union AnimCmd *const sAnims_ModeWindow[] = {
     [MODEWINDOW_ANIM_TRANSITION]  = sAnim_ModeWindow_Transition,
 };
 
-static const struct SpriteTemplate sSpriteTemplate_ModeWindow =
-{
+static const struct SpriteTemplate sSpriteTemplate_ModeWindow = {
     .tileTag = GFXTAG_MODE_WINDOW,
     .paletteTag = PALTAG_MISC_UI,
     .oam = &sOamData_ModeWindow,
@@ -1104,7 +1090,7 @@ static const struct OamData sOamData_ButtonWindow = {
     .y = 0,
     .affineMode = ST_OAM_AFFINE_OFF,
     .objMode = ST_OAM_OBJ_NORMAL,
-    .mosaic = FALSE,
+    .mosaic = 0,
     .bpp = ST_OAM_4BPP,
     .shape = SPRITE_SHAPE(64x64),
     .x = 0,
@@ -1116,8 +1102,7 @@ static const struct OamData sOamData_ButtonWindow = {
     .affineParam = 0,
 };
 
-static const struct SpriteTemplate sSpriteTemplate_ButtonWindow =
-{
+static const struct SpriteTemplate sSpriteTemplate_ButtonWindow = {
     .tileTag = GFXTAG_BUTTON_WINDOW,
     .paletteTag = PALTAG_MISC_UI,
     .oam = &sOamData_ButtonWindow,
@@ -1131,7 +1116,7 @@ static const struct OamData sOamData_StartSelectButton = {
     .y = 0,
     .affineMode = ST_OAM_AFFINE_OFF,
     .objMode = ST_OAM_OBJ_NORMAL,
-    .mosaic = FALSE,
+    .mosaic = 0,
     .bpp = ST_OAM_4BPP,
     .shape = SPRITE_SHAPE(32x8),
     .x = 0,
@@ -1147,7 +1132,7 @@ static const struct OamData sOamData_ScrollIndicator = {
     .y = 0,
     .affineMode = ST_OAM_AFFINE_OFF,
     .objMode = ST_OAM_OBJ_NORMAL,
-    .mosaic = FALSE,
+    .mosaic = 0,
     .bpp = ST_OAM_4BPP,
     .shape = SPRITE_SHAPE(16x16),
     .x = 0,
@@ -1175,8 +1160,7 @@ static const union AnimCmd *const sAnims_TwoFrame[] = {
     sAnim_Frame1,
 };
 
-static const struct SpriteTemplate sSpriteTemplate_StartSelectButton =
-{
+static const struct SpriteTemplate sSpriteTemplate_StartSelectButton = {
     .tileTag = GFXTAG_START_SELECT_BUTTONS,
     .paletteTag = PALTAG_MISC_UI,
     .oam = &sOamData_StartSelectButton,
@@ -1186,8 +1170,7 @@ static const struct SpriteTemplate sSpriteTemplate_StartSelectButton =
     .callback = SpriteCallbackDummy,
 };
 
-static const struct SpriteTemplate sSpriteTemplate_ScrollIndicator =
-{
+static const struct SpriteTemplate sSpriteTemplate_ScrollIndicator = {
     .tileTag = GFXTAG_SCROLL_INDICATOR,
     .paletteTag = PALTAG_MISC_UI,
     .oam = &sOamData_ScrollIndicator,
@@ -1327,7 +1310,7 @@ static void StartEasyChatScreen(u8 taskId, TaskFunc taskFunc)
 
 static void Task_InitEasyChatScreen(u8 taskId)
 {
-    if (!IsOverworldLinkActive())
+    if (!IsUpdateLinkStateCBActive())
     {
         while (InitEasyChatScreen(taskId));
     }
@@ -1510,7 +1493,7 @@ void ShowEasyChatScreen(void)
         displayedPersonType = EASY_CHAT_PERSON_REPORTER_MALE;
         break;
     case EASY_CHAT_TYPE_BATTLE_TOWER_INTERVIEW:
-        words = gSaveBlock1Ptr->tvShows[gSpecialVar_0x8005].bravoTrainerTower.words;
+        words = gSaveBlock1Ptr->tvShows[gSpecialVar_0x8005].fanclubOpinions.words18;
         displayedPersonType = EASY_CHAT_PERSON_REPORTER_FEMALE;
         break;
     case EASY_CHAT_TYPE_GOOD_SAYING:
@@ -1639,7 +1622,7 @@ static bool8 InitEasyChatScreenStruct(u8 type, u16 *words, u8 displayedPersonTyp
     u8 templateId;
     int i;
 
-    sEasyChatScreen = Alloc(sizeof(*sEasyChatScreen));
+    sEasyChatScreen = malloc(sizeof(*sEasyChatScreen));
     if (sEasyChatScreen == NULL)
         return FALSE;
 
@@ -1690,7 +1673,8 @@ static bool8 InitEasyChatScreenStruct(u8 type, u16 *words, u8 displayedPersonTyp
 
 static void FreeEasyChatScreenStruct(void)
 {
-    TRY_FREE_AND_SET_NULL(sEasyChatScreen);
+    if (sEasyChatScreen != NULL)
+        FREE_AND_SET_NULL(sEasyChatScreen);
 }
 
 // Returns the function ID of the action to take as a result of player's input.
@@ -2924,7 +2908,7 @@ static void GetQuizTitle(u8 *dst)
     u8 name[32];
     struct SaveBlock1 *saveBlock1 = gSaveBlock1Ptr;
     DynamicPlaceholderTextUtil_Reset();
-
+    
     // Buffer author's name
     if (StringLength(saveBlock1->lilycoveLady.quiz.playerName) != 0)
     {
@@ -3092,7 +3076,8 @@ static bool8 LoadEasyChatScreen(void)
 
 static void FreeEasyChatScreenControl(void)
 {
-    TRY_FREE_AND_SET_NULL(sScreenControl);
+    if (sScreenControl)
+        FREE_AND_SET_NULL(sScreenControl);
 }
 
 static void StartEasyChatFunction(u16 funcId)
@@ -3191,7 +3176,7 @@ static bool8 UpdateMainCursor(void)
         else
         {
             CopyEasyChatWord(str, *ecWord);
-            stringWidth = GetStringWidth(FONT_NORMAL, str, 0);
+            stringWidth = GetStringWidth(1, str, 0);
         }
 
         trueStringWidth = stringWidth + 17;
@@ -3915,27 +3900,27 @@ static bool8 InitEasyChatScreenControl_(void)
 
 static void InitEasyChatBgs(void)
 {
-    ChangeBgX(3, 0, BG_COORD_SET);
-    ChangeBgY(3, 0, BG_COORD_SET);
-    ChangeBgX(1, 0, BG_COORD_SET);
-    ChangeBgY(1, 0, BG_COORD_SET);
-    ChangeBgX(2, 0, BG_COORD_SET);
-    ChangeBgY(2, 0, BG_COORD_SET);
-    ChangeBgX(0, 0, BG_COORD_SET);
-    ChangeBgY(0, 0, BG_COORD_SET);
+    ChangeBgX(3, 0, 0);
+    ChangeBgY(3, 0, 0);
+    ChangeBgX(1, 0, 0);
+    ChangeBgY(1, 0, 0);
+    ChangeBgX(2, 0, 0);
+    ChangeBgY(2, 0, 0);
+    ChangeBgX(0, 0, 0);
+    ChangeBgY(0, 0, 0);
     SetGpuReg(REG_OFFSET_DISPCNT, DISPCNT_MODE_0 | DISPCNT_OBJ_1D_MAP | DISPCNT_OBJ_ON | DISPCNT_WIN0_ON);
 }
 
 static void LoadEasyChatPalettes(void)
 {
     ResetPaletteFade();
-    LoadPalette(gEasyChatMode_Pal, BG_PLTT_ID(0), PLTT_SIZE_4BPP);
-    LoadPalette(sTextInputFrameOrange_Pal, BG_PLTT_ID(1), sizeof(sTextInputFrameOrange_Pal));
-    LoadPalette(sTextInputFrameGreen_Pal, BG_PLTT_ID(4), sizeof(sTextInputFrameGreen_Pal));
-    LoadPalette(sTitleText_Pal, BG_PLTT_ID(10), sizeof(sTitleText_Pal));
-    LoadPalette(sText_Pal, BG_PLTT_ID(11), sizeof(sText_Pal));
-    LoadPalette(sText_Pal, BG_PLTT_ID(15), sizeof(sText_Pal));
-    LoadPalette(sText_Pal, BG_PLTT_ID(3), sizeof(sText_Pal));
+    LoadPalette(gEasyChatMode_Pal, 0, 32);
+    LoadPalette(sTextInputFrameOrange_Pal, 1 * 16, 32);
+    LoadPalette(sTextInputFrameGreen_Pal, 4 * 16, 32);
+    LoadPalette(sTitleText_Pal, 10 * 16, 8);
+    LoadPalette(sText_Pal, 11 * 16, 12);
+    LoadPalette(sText_Pal, 15 * 16, 12);
+    LoadPalette(sText_Pal, 3 * 16, 12);
 }
 
 static void PrintTitle(void)
@@ -3945,11 +3930,11 @@ static void PrintTitle(void)
     if (!titleText)
         return;
 
-    xOffset = GetStringCenterAlignXOffset(FONT_NORMAL, titleText, 144);
-    FillWindowPixelBuffer(WIN_TITLE, PIXEL_FILL(0));
-    PrintEasyChatTextWithColors(WIN_TITLE, FONT_NORMAL, titleText, xOffset, 1, TEXT_SKIP_DRAW, TEXT_COLOR_TRANSPARENT, TEXT_COLOR_DARK_GRAY, TEXT_COLOR_LIGHT_GRAY);
-    PutWindowTilemap(WIN_TITLE);
-    CopyWindowToVram(WIN_TITLE, COPYWIN_FULL);
+    xOffset = GetStringCenterAlignXOffset(1, titleText, 144);
+    FillWindowPixelBuffer(0, PIXEL_FILL(0));
+    PrintEasyChatTextWithColors(0, 1, titleText, xOffset, 1, TEXT_SPEED_FF, TEXT_COLOR_TRANSPARENT, TEXT_COLOR_DARK_GRAY, TEXT_COLOR_LIGHT_GRAY);
+    PutWindowTilemap(0);
+    CopyWindowToVram(0, 3);
 }
 
 static void PrintEasyChatText(u8 windowId, u8 fontId, const u8 *str, u8 x, u8 y, u8 speed, void (*callback)(struct TextPrinterTemplate *, u16))
@@ -3969,10 +3954,10 @@ static void PrintEasyChatTextWithColors(u8 windowId, u8 fontId, const u8 *str, u
 static void PrintInitialInstructions(void)
 {
     FillBgTilemapBufferRect(0, 0, 0, 0, 32, 20, 17);
-    LoadUserWindowBorderGfx(WIN_MSG, 1, BG_PLTT_ID(14));
-    DrawTextBorderOuter(WIN_MSG, 1, 14);
+    LoadUserWindowBorderGfx(1, 1, 0xE0);
+    DrawTextBorderOuter(1, 1, 14);
     PrintEasyChatStdMessage(MSG_INSTRUCTIONS);
-    PutWindowTilemap(WIN_MSG);
+    PutWindowTilemap(1);
     CopyBgTilemapBufferToVram(0);
 }
 
@@ -4016,14 +4001,14 @@ static void PrintEasyChatStdMessage(u8 msgId)
         break;
     }
 
-    FillWindowPixelBuffer(WIN_MSG, PIXEL_FILL(1));
+    FillWindowPixelBuffer(1, PIXEL_FILL(1));
     if (text1)
-        PrintEasyChatText(WIN_MSG, FONT_NORMAL, text1, 0, 1, TEXT_SKIP_DRAW, 0);
+        PrintEasyChatText(1, 1, text1, 0, 1, TEXT_SPEED_FF, 0);
 
     if (text2)
-        PrintEasyChatText(WIN_MSG, FONT_NORMAL, text2, 0, 17, TEXT_SKIP_DRAW, 0);
+        PrintEasyChatText(1, 1, text2, 0, 17, TEXT_SPEED_FF, 0);
 
-    CopyWindowToVram(WIN_MSG, COPYWIN_FULL);
+    CopyWindowToVram(1, 3);
 }
 
 static void CreateEasyChatYesNoMenu(u8 initialCursorPos)
@@ -4114,10 +4099,10 @@ static void PrintCurrentPhrase(void)
         }
 
         *str = EOS;
-        PrintEasyChatText(sScreenControl->windowId, FONT_NORMAL, sScreenControl->phrasePrintBuffer, 0, i * 16 + 1, TEXT_SKIP_DRAW, 0);
+        PrintEasyChatText(sScreenControl->windowId, 1, sScreenControl->phrasePrintBuffer, 0, i * 16 + 1, TEXT_SPEED_FF, 0);
     }
 
-    CopyWindowToVram(sScreenControl->windowId, COPYWIN_FULL);
+    CopyWindowToVram(sScreenControl->windowId, 3);
 }
 
 static void BufferFrameTilemap(u16 *tilemap)
@@ -4133,7 +4118,7 @@ static void BufferFrameTilemap(u16 *tilemap)
         // These frames fill the screen, no need to draw top/bottom edges
         right = sPhraseFrameDimensions[frameId].left + sPhraseFrameDimensions[frameId].width;
         bottom = sPhraseFrameDimensions[frameId].top + sPhraseFrameDimensions[frameId].height;
-
+        
         // Draw middle section
         for (y = sPhraseFrameDimensions[frameId].top; y < bottom; y++)
         {
@@ -4210,14 +4195,14 @@ static void AdjustBgTilemapForFooter(void)
 
 static void DrawLowerWindow(void)
 {
-    PutWindowTilemap(WIN_INPUT_SELECT);
-    CopyBgTilemapBufferToVram(WIN_INPUT_SELECT);
+    PutWindowTilemap(2);
+    CopyBgTilemapBufferToVram(2);
 }
 
 static void InitLowerWindowText(u32 whichText)
 {
     ResetLowerWindowScroll();
-    FillWindowPixelBuffer(WIN_INPUT_SELECT, PIXEL_FILL(1));
+    FillWindowPixelBuffer(2, PIXEL_FILL(1));
     switch (whichText)
     {
     case TEXT_GROUPS:
@@ -4231,7 +4216,7 @@ static void InitLowerWindowText(u32 whichText)
         break;
     }
 
-    CopyWindowToVram(WIN_INPUT_SELECT, COPYWIN_GFX);
+    CopyWindowToVram(2, 2);
 }
 
 static void PrintKeyboardText(void)
@@ -4260,7 +4245,7 @@ static void PrintKeyboardGroupNames(void)
                 return;
             }
 
-            PrintEasyChatText(WIN_INPUT_SELECT, FONT_NORMAL, GetEasyChatWordGroupName(groupId), x * 84 + 10, y, TEXT_SKIP_DRAW, NULL);
+            PrintEasyChatText(2, 1, GetEasyChatWordGroupName(groupId), x * 84 + 10, y, TEXT_SPEED_FF, NULL);
         }
 
         y += 16;
@@ -4272,7 +4257,7 @@ static void PrintKeyboardAlphabet(void)
     u32 i;
 
     for (i = 0; i < ARRAY_COUNT(sEasyChatKeyboardAlphabet); i++)
-        PrintEasyChatText(WIN_INPUT_SELECT, FONT_NORMAL, sEasyChatKeyboardAlphabet[i], 10, 97 + i * 16, TEXT_SKIP_DRAW, NULL);
+        PrintEasyChatText(2, 1, sEasyChatKeyboardAlphabet[i], 10, 97 + i * 16, TEXT_SPEED_FF, NULL);
 }
 
 static void PrintInitialWordSelectText(void)
@@ -4343,16 +4328,16 @@ static void PrintWordSelectText(u8 scrollOffset, u8 numRows)
             {
                 CopyEasyChatWordPadded(sScreenControl->wordSelectPrintBuffer, easyChatWord, 0);
                 if (!DummyWordCheck(easyChatWord))
-                    PrintEasyChatText(WIN_INPUT_SELECT, FONT_NORMAL, sScreenControl->wordSelectPrintBuffer, (j * 13 + 3) * 8, y, TEXT_SKIP_DRAW, NULL);
+                    PrintEasyChatText(2, 1, sScreenControl->wordSelectPrintBuffer, (j * 13 + 3) * 8, y, TEXT_SPEED_FF, NULL);
                 else // Never reached
-                    PrintEasyChatTextWithColors(WIN_INPUT_SELECT, FONT_NORMAL, sScreenControl->wordSelectPrintBuffer, (j * 13 + 3) * 8, y, TEXT_SKIP_DRAW, TEXT_COLOR_WHITE, TEXT_COLOR_LIGHT_RED, TEXT_COLOR_LIGHT_GRAY);
+                    PrintEasyChatTextWithColors(2, 1, sScreenControl->wordSelectPrintBuffer, (j * 13 + 3) * 8, y, TEXT_SPEED_FF, TEXT_COLOR_WHITE, TEXT_COLOR_LIGHT_RED, TEXT_COLOR_LIGHT_GRAY);
             }
         }
 
         y += 16;
     }
 
-    CopyWindowToVram(WIN_INPUT_SELECT, COPYWIN_GFX);
+    CopyWindowToVram(2, 2);
 }
 
 static void EraseWordSelectRows(u8 scrollOffset, u8 numRows)
@@ -4376,15 +4361,15 @@ static void EraseWordSelectRows(u8 scrollOffset, u8 numRows)
         var1 = 0;
     }
 
-    FillWindowPixelRect(WIN_INPUT_SELECT, PIXEL_FILL(1), 0, y, 224, var2);
+    FillWindowPixelRect(2, PIXEL_FILL(1), 0, y, 224, var2);
     if (var1)
-        FillWindowPixelRect(WIN_INPUT_SELECT, PIXEL_FILL(1), 0, 0, 224, var1);
+        FillWindowPixelRect(2, PIXEL_FILL(1), 0, 0, 224, var1);
 }
 
 static void ClearWordSelectWindow(void)
 {
-    FillWindowPixelBuffer(WIN_INPUT_SELECT, PIXEL_FILL(1));
-    CopyWindowToVram(WIN_INPUT_SELECT, COPYWIN_GFX);
+    FillWindowPixelBuffer(2, PIXEL_FILL(1));
+    CopyWindowToVram(2, 2);
 }
 
 static void InitLowerWindowAnim(int winAnimType)
@@ -4531,7 +4516,7 @@ static void BufferLowerWindowFrame(int left, int top, int width, int height)
     bottom = top + height - 1;
     x = left;
     y = top;
-
+    
     // Draw top edge
     tilemap[y * 32 + x] = FRAME_OFFSET_GREEN + FRAME_TILE_TOP_L_CORNER;
     x++;
@@ -4565,7 +4550,7 @@ static void BufferLowerWindowFrame(int left, int top, int width, int height)
 
 static void ResetLowerWindowScroll(void)
 {
-    ChangeBgY(2, 0x800, BG_COORD_SET);
+    ChangeBgY(2, 0x800, 0);
     sScreenControl->scrollOffset = 0;
 }
 
@@ -4587,7 +4572,7 @@ static void InitLowerWindowScroll(s16 scrollChange, u8 speed)
     }
     else
     {
-        ChangeBgY(2, bgY, BG_COORD_SET);
+        ChangeBgY(2, bgY, 0);
     }
 }
 
@@ -4602,7 +4587,7 @@ static bool8 UpdateLowerWindowScroll(void)
     }
     else
     {
-        ChangeBgY(2, sScreenControl->scrollSpeed, BG_COORD_ADD);
+        ChangeBgY(2, sScreenControl->scrollSpeed, 1);
         return TRUE;
     }
 }
@@ -4650,17 +4635,17 @@ static void SpriteCB_Cursor(struct Sprite *sprite)
         if (++sprite->sDelayTimer > 2)
         {
             sprite->sDelayTimer = 0;
-            if (++sprite->x2 > 0)
-                sprite->x2 = -6;
+            if (++sprite->pos2.x > 0)
+                sprite->pos2.x = -6;
         }
     }
 }
 
 static void SetMainCursorPos(u8 x, u8 y)
 {
-    sScreenControl->mainCursorSprite->x = x;
-    sScreenControl->mainCursorSprite->y = y;
-    sScreenControl->mainCursorSprite->x2 = 0;
+    sScreenControl->mainCursorSprite->pos1.x = x;
+    sScreenControl->mainCursorSprite->pos1.y = y;
+    sScreenControl->mainCursorSprite->pos2.x = 0;
     sScreenControl->mainCursorSprite->sDelayTimer = 0;
 }
 
@@ -4668,7 +4653,7 @@ static void StopMainCursorAnim(void)
 {
     sScreenControl->mainCursorSprite->sDelayTimer = 0;
     sScreenControl->mainCursorSprite->sAnimateCursor = FALSE;
-    sScreenControl->mainCursorSprite->x2 = 0;
+    sScreenControl->mainCursorSprite->pos2.x = 0;
 }
 
 static void StartMainCursorAnim(void)
@@ -4680,11 +4665,11 @@ static void CreateRectangleCursorSprites(void)
 {
     u8 spriteId = CreateSprite(&sSpriteTemplate_RectangleCursor, 0, 0, 3);
     sScreenControl->rectangleCursorSpriteRight = &gSprites[spriteId];
-    sScreenControl->rectangleCursorSpriteRight->x2 = 32;
+    sScreenControl->rectangleCursorSpriteRight->pos2.x = 32;
 
     spriteId = CreateSprite(&sSpriteTemplate_RectangleCursor, 0, 0, 3);
     sScreenControl->rectangleCursorSpriteLeft = &gSprites[spriteId];
-    sScreenControl->rectangleCursorSpriteLeft->x2 = -32;
+    sScreenControl->rectangleCursorSpriteLeft->pos2.x = -32;
 
     sScreenControl->rectangleCursorSpriteRight->hFlip = TRUE;
     UpdateRectangleCursorPos();
@@ -4703,7 +4688,7 @@ static void UpdateRectangleCursorPos(void)
     s8 column;
     s8 row;
 
-    if (sScreenControl->rectangleCursorSpriteRight
+    if (sScreenControl->rectangleCursorSpriteRight 
      && sScreenControl->rectangleCursorSpriteLeft)
     {
         GetKeyboardCursorColAndRow(&column, &row);
@@ -4720,23 +4705,23 @@ static void SetRectangleCursorPos_GroupMode(s8 column, s8 row)
     {
         // In group name window
         StartSpriteAnim(sScreenControl->rectangleCursorSpriteRight, RECTCURSOR_ANIM_ON_GROUP);
-        sScreenControl->rectangleCursorSpriteRight->x = column * 84 + 58;
-        sScreenControl->rectangleCursorSpriteRight->y = row * 16 + 96;
+        sScreenControl->rectangleCursorSpriteRight->pos1.x = column * 84 + 58;
+        sScreenControl->rectangleCursorSpriteRight->pos1.y = row * 16 + 96;
 
         StartSpriteAnim(sScreenControl->rectangleCursorSpriteLeft, RECTCURSOR_ANIM_ON_GROUP);
-        sScreenControl->rectangleCursorSpriteLeft->x = column * 84 + 58;
-        sScreenControl->rectangleCursorSpriteLeft->y = row * 16 + 96;
+        sScreenControl->rectangleCursorSpriteLeft->pos1.x = column * 84 + 58;
+        sScreenControl->rectangleCursorSpriteLeft->pos1.y = row * 16 + 96;
     }
     else
     {
         // In button window
         StartSpriteAnim(sScreenControl->rectangleCursorSpriteRight, RECTCURSOR_ANIM_ON_BUTTON);
-        sScreenControl->rectangleCursorSpriteRight->x = 216;
-        sScreenControl->rectangleCursorSpriteRight->y = row * 16 + 112;
+        sScreenControl->rectangleCursorSpriteRight->pos1.x = 216;
+        sScreenControl->rectangleCursorSpriteRight->pos1.y = row * 16 + 112;
 
         StartSpriteAnim(sScreenControl->rectangleCursorSpriteLeft, RECTCURSOR_ANIM_ON_BUTTON);
-        sScreenControl->rectangleCursorSpriteLeft->x = 216;
-        sScreenControl->rectangleCursorSpriteLeft->y = row * 16 + 112;
+        sScreenControl->rectangleCursorSpriteLeft->pos1.x = 216;
+        sScreenControl->rectangleCursorSpriteLeft->pos1.y = row * 16 + 112;
     }
 }
 
@@ -4763,23 +4748,23 @@ static void SetRectangleCursorPos_AlphabetMode(s8 column, s8 row)
         }
 
         StartSpriteAnim(sScreenControl->rectangleCursorSpriteRight, anim);
-        sScreenControl->rectangleCursorSpriteRight->x = x;
-        sScreenControl->rectangleCursorSpriteRight->y = y;
+        sScreenControl->rectangleCursorSpriteRight->pos1.x = x;
+        sScreenControl->rectangleCursorSpriteRight->pos1.y = y;
 
         StartSpriteAnim(sScreenControl->rectangleCursorSpriteLeft, anim);
-        sScreenControl->rectangleCursorSpriteLeft->x = x;
-        sScreenControl->rectangleCursorSpriteLeft->y = y;
+        sScreenControl->rectangleCursorSpriteLeft->pos1.x = x;
+        sScreenControl->rectangleCursorSpriteLeft->pos1.y = y;
     }
     else
     {
         // In button window
         StartSpriteAnim(sScreenControl->rectangleCursorSpriteRight, RECTCURSOR_ANIM_ON_BUTTON);
-        sScreenControl->rectangleCursorSpriteRight->x = 216;
-        sScreenControl->rectangleCursorSpriteRight->y = row * 16 + 112;
+        sScreenControl->rectangleCursorSpriteRight->pos1.x = 216;
+        sScreenControl->rectangleCursorSpriteRight->pos1.y = row * 16 + 112;
 
         StartSpriteAnim(sScreenControl->rectangleCursorSpriteLeft, RECTCURSOR_ANIM_ON_BUTTON);
-        sScreenControl->rectangleCursorSpriteLeft->x = 216;
-        sScreenControl->rectangleCursorSpriteLeft->y = row * 16 + 112;
+        sScreenControl->rectangleCursorSpriteLeft->pos1.x = 216;
+        sScreenControl->rectangleCursorSpriteLeft->pos1.y = row * 16 + 112;
     }
 }
 
@@ -4799,8 +4784,8 @@ static void SpriteCB_WordSelectCursor(struct Sprite *sprite)
     if (++sprite->sDelayTimer > 2)
     {
         sprite->sDelayTimer = 0;
-        if (++sprite->x2 > 0)
-            sprite->x2 = -6;
+        if (++sprite->pos2.x > 0)
+            sprite->pos2.x = -6;
     }
 }
 
@@ -4819,9 +4804,9 @@ static void SetWordSelectCursorPos(u8 x, u8 y)
 {
     if (sScreenControl->wordSelectCursorSprite)
     {
-        sScreenControl->wordSelectCursorSprite->x = x;
-        sScreenControl->wordSelectCursorSprite->y = y;
-        sScreenControl->wordSelectCursorSprite->x2 = 0;
+        sScreenControl->wordSelectCursorSprite->pos1.x = x;
+        sScreenControl->wordSelectCursorSprite->pos1.y = y;
+        sScreenControl->wordSelectCursorSprite->pos2.x = 0;
         sScreenControl->wordSelectCursorSprite->sDelayTimer = 0;
     }
 }
@@ -4839,7 +4824,7 @@ static void CreateSideWindowSprites(void)
 {
     u8 spriteId = CreateSprite(&sSpriteTemplate_ButtonWindow, 208, 128, 6);
     sScreenControl->buttonWindowSprite = &gSprites[spriteId];
-    sScreenControl->buttonWindowSprite->x2 = -64;
+    sScreenControl->buttonWindowSprite->pos2.x = -64;
 
     spriteId = CreateSprite(&sSpriteTemplate_ModeWindow, 208, 80, 5);
     sScreenControl->modeWindowSprite = &gSprites[spriteId];
@@ -4854,10 +4839,10 @@ static bool8 ShowSideWindow(void)
         return FALSE;
     case 0:
         // Slide button window on
-        sScreenControl->buttonWindowSprite->x2 += 8;
-        if (sScreenControl->buttonWindowSprite->x2 >= 0)
+        sScreenControl->buttonWindowSprite->pos2.x += 8;
+        if (sScreenControl->buttonWindowSprite->pos2.x >= 0)
         {
-            sScreenControl->buttonWindowSprite->x2 = 0;
+            sScreenControl->buttonWindowSprite->pos2.x = 0;
 
             // Set mode window anim
             if (!GetInAlphabetMode())
@@ -4896,8 +4881,8 @@ static bool8 DestroySideWindowSprites(void)
             sScreenControl->modeWindowState = 1;
         break;
     case 1:
-        sScreenControl->buttonWindowSprite->x2 -= 8;
-        if (sScreenControl->buttonWindowSprite->x2 <= -64)
+        sScreenControl->buttonWindowSprite->pos2.x -= 8;
+        if (sScreenControl->buttonWindowSprite->pos2.x <= -64)
         {
             DestroySprite(sScreenControl->modeWindowSprite);
             DestroySprite(sScreenControl->buttonWindowSprite);
@@ -4962,14 +4947,14 @@ static void SetScrollIndicatorXPos(bool32 inWordSelect)
     if (!inWordSelect)
     {
         // Keyboard (only relevant for group mode, can't scroll in alphabet mode)
-        sScreenControl->scrollIndicatorUpSprite->x = 96;
-        sScreenControl->scrollIndicatorDownSprite->x = 96;
+        sScreenControl->scrollIndicatorUpSprite->pos1.x = 96;
+        sScreenControl->scrollIndicatorDownSprite->pos1.x = 96;
     }
     else
     {
         // Word select
-        sScreenControl->scrollIndicatorUpSprite->x = 120;
-        sScreenControl->scrollIndicatorDownSprite->x = 120;
+        sScreenControl->scrollIndicatorUpSprite->pos1.x = 120;
+        sScreenControl->scrollIndicatorDownSprite->pos1.x = 120;
     }
 }
 
@@ -5026,7 +5011,7 @@ static void TryAddInterviewObjectEvents(void)
         return;
 
     // Add object for reporter/interviewing fan (facing left)
-    spriteId = CreateObjectGraphicsSprite(graphicsId, SpriteCallbackDummy, 76, 40, 0);
+    spriteId = AddPseudoObjectEvent(graphicsId, SpriteCallbackDummy, 76, 40, 0);
     if (spriteId != MAX_SPRITES)
     {
         gSprites[spriteId].oam.priority = 0;
@@ -5034,7 +5019,7 @@ static void TryAddInterviewObjectEvents(void)
     }
 
     // Add object for player (facing right)
-    spriteId = CreateObjectGraphicsSprite(
+    spriteId = AddPseudoObjectEvent(
         gSaveBlock2Ptr->playerGender == MALE ? OBJ_EVENT_GFX_RIVAL_BRENDAN_NORMAL : OBJ_EVENT_GFX_RIVAL_MAY_NORMAL,
         SpriteCallbackDummy,
         52,
@@ -5097,7 +5082,7 @@ static void AddMainScreenButtonWindow(void)
         if (str)
         {
             int x = sFooterOptionXOffsets[footerIndex][i];
-            PrintEasyChatText(windowId, FONT_NORMAL, str, x, 1, 0, NULL);
+            PrintEasyChatText(windowId, 1, str, x, 1, 0, NULL);
         }
     }
 
@@ -5109,7 +5094,7 @@ static bool8 IsEasyChatGroupUnlocked(u8 groupId)
     switch (groupId)
     {
     case EC_GROUP_TRENDY_SAYING:
-        return FlagGet(FLAG_UNLOCKED_TRENDY_SAYINGS);
+        return FlagGet(FLAG_SYS_HIPSTER_MEET);
     case EC_GROUP_EVENTS:
     case EC_GROUP_MOVE_1:
     case EC_GROUP_MOVE_2:
@@ -5224,7 +5209,7 @@ u8 *CopyEasyChatWord(u8 *dest, u16 easyChatWord)
     {
         u16 index = EC_INDEX(easyChatWord);
         u8 groupId = EC_GROUP(easyChatWord);
-        resultStr = StringCopyUppercase(dest, GetEasyChatWord(groupId, index));
+        resultStr = StringCopy(dest, GetEasyChatWord(groupId, index));
     }
     else
     {
@@ -5425,99 +5410,80 @@ void BufferDeepLinkPhrase(void)
     CopyEasyChatWord(gStringVar2, easyChatWord);
 }
 
-/*
-    ### Trendy Sayings
-
-    Not to be confused with Dewford Town's "trendy phrase".
-
-    This is a group of easy chat words (EC_GROUP_TRENDY_SAYING) that are normally inaccessible.
-    They can be unlocked either through Mystery Event (where they're referred to as "rare" words)
-    or from the "Hipster" variety of the Mauville Old Man. The Hipster can unlock one word each
-    time he is received via record mixing (and once if he is the player's default Old Man).
-
-    Which words have been unlocked is saved in the unlockedTrendySayings bitfield in SaveBlock1
-
-    Unlocked trendy saying words are only accessible if the flag FLAG_UNLOCKED_TRENDY_SAYINGS is set.
-    It's set any time the player talks to the Hipster, but is not apparently set by Mystery Event,
-    meaning trendy saying words unlocked via Mystery Event may not be available until the player has
-    talked to the Hipster.
-*/
-static bool8 IsTrendySayingUnlocked(u8 wordIndex)
+static bool8 IsAdditionalPhraseUnlocked(u8 additionalPhraseId)
 {
-    int byteOffset = wordIndex / 8;
-    int shift = wordIndex % 8;
-    return (gSaveBlock1Ptr->unlockedTrendySayings[byteOffset] >> shift) & 1;
+    int byteOffset = additionalPhraseId / 8;
+    int shift = additionalPhraseId % 8;
+    return (gSaveBlock1Ptr->additionalPhrases[byteOffset] >> shift) & 1;
 }
 
-void UnlockTrendySaying(u8 wordIndex)
+void UnlockAdditionalPhrase(u8 additionalPhraseId)
 {
-    if (wordIndex < NUM_TRENDY_SAYINGS)
+    if (additionalPhraseId < NUM_ADDITIONAL_PHRASES)
     {
-        int byteOffset = wordIndex / 8;
-        int shift = wordIndex % 8;
-        gSaveBlock1Ptr->unlockedTrendySayings[byteOffset] |= 1 << shift;
+        int byteOffset = additionalPhraseId / 8;
+        int shift = additionalPhraseId % 8;
+        gSaveBlock1Ptr->additionalPhrases[byteOffset] |= 1 << shift;
     }
 }
 
-static u8 GetNumTrendySayingsUnlocked(void)
+static u8 GetNumAdditionalPhrasesUnlocked(void)
 {
     u8 i;
-    u8 numUnlocked;
+    u8 numAdditionalPhrasesUnlocked;
 
-    for (i = 0, numUnlocked = 0; i < NUM_TRENDY_SAYINGS; i++)
+    for (i = 0, numAdditionalPhrasesUnlocked = 0; i < NUM_ADDITIONAL_PHRASES; i++)
     {
-        if (IsTrendySayingUnlocked(i))
-            numUnlocked++;
+        if (IsAdditionalPhraseUnlocked(i))
+            numAdditionalPhrasesUnlocked++;
     }
 
-    return numUnlocked;
+    return numAdditionalPhrasesUnlocked;
 }
 
-u16 UnlockRandomTrendySaying(void)
+u16 GetNewHipsterPhraseToTeach(void)
 {
     u16 i;
-    u16 numToSkip;
-    u8 numUnlocked = GetNumTrendySayingsUnlocked();
-    if (numUnlocked == NUM_TRENDY_SAYINGS)
+    u16 additionalPhraseId;
+    u8 numAdditionalPhrasesUnlocked = GetNumAdditionalPhrasesUnlocked();
+    if (numAdditionalPhrasesUnlocked == NUM_ADDITIONAL_PHRASES)
         return EC_EMPTY_WORD;
 
-    numToSkip = Random() % (NUM_TRENDY_SAYINGS - numUnlocked);
-    for (i = 0; i < NUM_TRENDY_SAYINGS; i++)
+    additionalPhraseId = Random() % (NUM_ADDITIONAL_PHRASES - numAdditionalPhrasesUnlocked);
+    for (i = 0; i < NUM_ADDITIONAL_PHRASES; i++)
     {
-        if (!IsTrendySayingUnlocked(i))
+        if (!IsAdditionalPhraseUnlocked(i))
         {
-            if (numToSkip)
+            if (additionalPhraseId)
             {
-                // Skip the first n locked words, as determined by the Random call above.
-                numToSkip--;
+                additionalPhraseId--;
             }
             else
             {
-                UnlockTrendySaying(i);
+                UnlockAdditionalPhrase(i);
                 return EC_WORD(EC_GROUP_TRENDY_SAYING, i);
             }
         }
     }
 
-    // Would only be reached if there are no new words to teach, which is handled at the start.
     return EC_EMPTY_WORD;
 }
 
 // Unused
-static u16 GetRandomUnlockedTrendySaying(void)
+u16 GetRandomTaughtHipsterPhrase(void)
 {
     u16 i;
-    u16 n = GetNumTrendySayingsUnlocked();
-    if (n == 0)
+    u16 additionalPhraseId = GetNumAdditionalPhrasesUnlocked();
+    if (additionalPhraseId == 0)
         return EC_EMPTY_WORD;
 
-    n = Random() % n;
-    for (i = 0; i < NUM_TRENDY_SAYINGS; i++)
+    additionalPhraseId = Random() % additionalPhraseId;
+    for (i = 0; i < NUM_ADDITIONAL_PHRASES; i++)
     {
-        if (IsTrendySayingUnlocked(i))
+        if (IsAdditionalPhraseUnlocked(i))
         {
-            if (n)
-                n--;
+            if (additionalPhraseId)
+                additionalPhraseId--;
             else
                 return EC_WORD(EC_GROUP_TRENDY_SAYING, i);
         }
@@ -5566,16 +5532,16 @@ void InitEasyChatPhrases(void)
 
     for (i = 0; i < ARRAY_COUNT(sDefaultProfileWords); i++)
         gSaveBlock1Ptr->easyChatProfile[i] = sDefaultProfileWords[i];
-
+    
     for (i = 0; i < EASY_CHAT_BATTLE_WORDS_COUNT; i++)
         gSaveBlock1Ptr->easyChatBattleStart[i] = sDefaultBattleStartWords[i];
-
+    
     for (i = 0; i < EASY_CHAT_BATTLE_WORDS_COUNT; i++)
         gSaveBlock1Ptr->easyChatBattleWon[i] = sDefaultBattleWonWords[i];
-
+    
     for (i = 0; i < EASY_CHAT_BATTLE_WORDS_COUNT; i++)
         gSaveBlock1Ptr->easyChatBattleLost[i] = sDefaultBattleLostWords[i];
-
+    
     for (i = 0; i < MAIL_COUNT; i++)
     {
         for (j = 0; j < MAIL_WORDS_COUNT; j++)
@@ -5588,10 +5554,10 @@ void InitEasyChatPhrases(void)
     // Mauville old man data is corrupted, which is initialized directly after
     // this function is called when starting a new game.
     for (i = 0; i < 64; i++)
-        gSaveBlock1Ptr->unlockedTrendySayings[i] = 0;
+        gSaveBlock1Ptr->additionalPhrases[i] = 0;
 #else
-    for (i = 0; i < ARRAY_COUNT(gSaveBlock1Ptr->unlockedTrendySayings); i++)
-        gSaveBlock1Ptr->unlockedTrendySayings[i] = 0;
+    for (i = 0; i < ARRAY_COUNT(gSaveBlock1Ptr->additionalPhrases); i++)
+        gSaveBlock1Ptr->additionalPhrases[i] = 0;
 #endif
 }
 
@@ -5608,7 +5574,8 @@ static bool8 InitEasyChatScreenWordData(void)
 
 static void FreeEasyChatScreenWordData(void)
 {
-    TRY_FREE_AND_SET_NULL(sWordData);
+    if (sWordData)
+        FREE_AND_SET_NULL(sWordData);
 }
 
 static void SetUnlockedEasyChatGroups(void)
@@ -5618,11 +5585,11 @@ static void SetUnlockedEasyChatGroups(void)
     sWordData->numUnlockedGroups = 0;
     if (GetNationalPokedexCount(FLAG_GET_SEEN))
         sWordData->unlockedGroupIds[sWordData->numUnlockedGroups++] = EC_GROUP_POKEMON;
-
+    
     // These groups are unlocked automatically
     for (i = EC_GROUP_TRAINER; i <= EC_GROUP_ADJECTIVES; i++)
         sWordData->unlockedGroupIds[sWordData->numUnlockedGroups++] = i;
-
+    
     if (FlagGet(FLAG_SYS_GAME_CLEAR))
     {
         sWordData->unlockedGroupIds[sWordData->numUnlockedGroups++] = EC_GROUP_EVENTS;
@@ -5630,7 +5597,7 @@ static void SetUnlockedEasyChatGroups(void)
         sWordData->unlockedGroupIds[sWordData->numUnlockedGroups++] = EC_GROUP_MOVE_2;
     }
 
-    if (FlagGet(FLAG_UNLOCKED_TRENDY_SAYINGS))
+    if (FlagGet(FLAG_SYS_HIPSTER_MEET))
         sWordData->unlockedGroupIds[sWordData->numUnlockedGroups++] = EC_GROUP_TRENDY_SAYING;
 
     if (IsNationalPokedexEnabled())
@@ -5660,7 +5627,7 @@ static u8 *BufferEasyChatWordGroupName(u8 *dest, u8 groupId, u16 totalChars)
         *str = CHAR_SPACE;
         str++;
     }
-
+    
     *str = EOS;
     return str;
 }
@@ -5679,7 +5646,7 @@ static u8 *CopyEasyChatWordPadded(u8 *dest, u16 easyChatWord, u16 totalChars)
         *str = CHAR_SPACE;
         str++;
     }
-
+    
     *str = EOS;
     return str;
 }
@@ -5819,7 +5786,7 @@ static bool8 IsEasyChatIndexAndGroupUnlocked(u16 wordIndex, u8 groupId)
     case EC_GROUP_MOVE_2:
         return TRUE;
     case EC_GROUP_TRENDY_SAYING:
-        return IsTrendySayingUnlocked(wordIndex);
+        return IsAdditionalPhraseUnlocked(wordIndex);
     default:
         return gEasyChatGroups[groupId].wordData.words[wordIndex].enabled;
     }

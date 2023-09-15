@@ -2,7 +2,6 @@
 #include "string_util.h"
 #include "text.h"
 #include "strings.h"
-#include "union_room_chat.h"
 
 EWRAM_DATA u8 gStringVar1[0x100] = {0};
 EWRAM_DATA u8 gStringVar2[0x100] = {0};
@@ -26,10 +25,10 @@ static const s32 sPowersOfTen[] =
     1000000000,
 };
 
-u8 *StringCopy_Nickname(u8 *dest, const u8 *src)
+u8 *StringCopy10(u8 *dest, const u8 *src)
 {
     u8 i;
-    u32 limit = POKEMON_NAME_LENGTH;
+    u32 limit = 10;
 
     for (i = 0; i < limit; i++)
     {
@@ -43,10 +42,10 @@ u8 *StringCopy_Nickname(u8 *dest, const u8 *src)
     return &dest[i];
 }
 
-u8 *StringGet_Nickname(u8 *str)
+u8 *StringGetEnd10(u8 *str)
 {
     u8 i;
-    u32 limit = POKEMON_NAME_LENGTH;
+    u32 limit = 10;
 
     for (i = 0; i < limit; i++)
         if (str[i] == EOS)
@@ -56,10 +55,10 @@ u8 *StringGet_Nickname(u8 *str)
     return &str[i];
 }
 
-u8 *StringCopy_PlayerName(u8 *dest, const u8 *src)
+u8 *StringCopy7(u8 *dest, const u8 *src)
 {
     s32 i;
-    s32 limit = PLAYER_NAME_LENGTH;
+    s32 limit = 7;
 
     for (i = 0; i < limit; i++)
     {
@@ -207,7 +206,7 @@ u8 *ConvertIntToDecimalStringN(u8 *dest, s32 value, enum StringConvertMode mode,
         }
         else if (state == WRITING_SPACES)
         {
-            *dest++ = CHAR_SPACER;
+            *dest++ = 0x77;
         }
 
         value = temp;
@@ -263,7 +262,7 @@ u8 *ConvertUIntToDecimalStringN(u8 *dest, u32 value, enum StringConvertMode mode
         }
         else if (state == WRITING_SPACES)
         {
-            *dest++ = CHAR_SPACER;
+            *dest++ = 0x77;
         }
 
         value = temp;
@@ -323,7 +322,7 @@ u8 *ConvertIntToHexStringN(u8 *dest, s32 value, enum StringConvertMode mode, u8 
         }
         else if (state == WRITING_SPACES)
         {
-            *dest++ = CHAR_SPACER;
+            *dest++ = 0x77;
         }
 
         value = temp;
@@ -355,7 +354,7 @@ u8 *StringExpandPlaceholders(u8 *dest, const u8 *src)
 
             switch (c)
             {
-            case EXT_CTRL_CODE_RESET_FONT:
+            case EXT_CTRL_CODE_RESET_SIZE:
             case EXT_CTRL_CODE_PAUSE_UNTIL_PRESS:
             case EXT_CTRL_CODE_FILL_WINDOW:
             case EXT_CTRL_CODE_JPN:
@@ -385,18 +384,18 @@ u8 *StringExpandPlaceholders(u8 *dest, const u8 *src)
 
 u8 *StringBraille(u8 *dest, const u8 *src)
 {
-    const u8 setBrailleFont[] = {
-        EXT_CTRL_CODE_BEGIN,
-        EXT_CTRL_CODE_FONT,
-        FONT_BRAILLE,
-        EOS
+    const u8 setBrailleFont[] = { 
+        EXT_CTRL_CODE_BEGIN, 
+        EXT_CTRL_CODE_SIZE, 
+        6, 
+        EOS 
     };
-    const u8 gotoLine2[] = {
-        CHAR_NEWLINE,
-        EXT_CTRL_CODE_BEGIN,
-        EXT_CTRL_CODE_SHIFT_DOWN,
-        2,
-        EOS
+    const u8 gotoLine2[] = { 
+        CHAR_NEWLINE, 
+        EXT_CTRL_CODE_BEGIN, 
+        EXT_CTRL_CODE_SHIFT_DOWN, 
+        2, 
+        EOS 
     };
 
     dest = StringCopy(dest, setBrailleFont);
@@ -415,7 +414,7 @@ u8 *StringBraille(u8 *dest, const u8 *src)
             break;
         default:
             *dest++ = c;
-            *dest++ = c + NUM_BRAILLE_CHARS;
+            *dest++ = c + 0x40;
             break;
         }
     }
@@ -631,7 +630,7 @@ bool32 IsStringJapanese(u8 *str)
 {
     while (*str != EOS)
     {
-        if (*str <= JAPANESE_CHAR_END)
+        if (*str < CHAR_0)
             if (*str != CHAR_SPACE)
                 return TRUE;
         str++;
@@ -640,13 +639,13 @@ bool32 IsStringJapanese(u8 *str)
     return FALSE;
 }
 
-bool32 IsStringNJapanese(u8 *str, s32 n)
+bool32 sub_800924C(u8 *str, s32 n)
 {
     s32 i;
 
     for (i = 0; *str != EOS && i < n; i++)
     {
-        if (*str <= JAPANESE_CHAR_END)
+        if (*str < CHAR_0)
             if (*str != CHAR_SPACE)
                 return TRUE;
         str++;
@@ -665,14 +664,14 @@ u8 GetExtCtrlCodeLength(u8 code)
         [EXT_CTRL_CODE_SHADOW]                 = 2,
         [EXT_CTRL_CODE_COLOR_HIGHLIGHT_SHADOW] = 4,
         [EXT_CTRL_CODE_PALETTE]                = 2,
-        [EXT_CTRL_CODE_FONT]                   = 2,
-        [EXT_CTRL_CODE_RESET_FONT]             = 1,
+        [EXT_CTRL_CODE_SIZE]                   = 2,
+        [EXT_CTRL_CODE_RESET_SIZE]             = 1,
         [EXT_CTRL_CODE_PAUSE]                  = 2,
         [EXT_CTRL_CODE_PAUSE_UNTIL_PRESS]      = 1,
         [EXT_CTRL_CODE_WAIT_SE]                = 1,
         [EXT_CTRL_CODE_PLAY_BGM]               = 3,
         [EXT_CTRL_CODE_ESCAPE]                 = 2,
-        [EXT_CTRL_CODE_SHIFT_RIGHT]            = 2,
+        [EXT_CTRL_CODE_SHIFT_TEXT]             = 2,
         [EXT_CTRL_CODE_SHIFT_DOWN]             = 2,
         [EXT_CTRL_CODE_FILL_WINDOW]            = 1,
         [EXT_CTRL_CODE_PLAY_SE]                = 3,
@@ -779,20 +778,4 @@ void StripExtCtrlCodes(u8 *str)
         }
     }
     str[destIndex] = EOS;
-}
-
-u8 *StringCopyUppercase(u8 *dest, const u8 *src)
-{
-    while (*src != EOS)
-    {
-        if (*src >= CHAR_a && *src <= CHAR_z)
-            *dest = gCaseToggleTable[*src];
-        else
-            *dest = *src;
-        dest++;
-        src++;
-    }
-
-    *dest = EOS;
-    return dest;
 }

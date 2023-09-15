@@ -10,7 +10,7 @@ struct PokedexAreaMapTemplate
 };
 
 void LoadPokedexAreaMapGfx(const struct PokedexAreaMapTemplate *);
-bool32 TryShowPokedexAreaMap(void);
+bool32 sub_81C4E90(void);
 void PokedexAreaMapChangeBgY(u32);
 void FreePokedexAreaMapBgNum(void);
 

@@ -21,7 +21,7 @@ static void CB2_ReshowBattleScreenAfterMenu(void);
 static bool8 LoadBattlerSpriteGfx(u8 battlerId);
 static void CreateBattlerSprite(u8 battlerId);
 static void CreateHealthboxSprite(u8 battlerId);
-static void ClearBattleBgCntBaseBlocks(void);
+static void sub_80A95F4(void);
 
 void ReshowBattleScreenDummy(void)
 {
@@ -63,7 +63,7 @@ static void CB2_ReshowBattleScreenAfterMenu(void)
         gBattle_BG3_Y = 0;
         break;
     case 1:
-        CpuFastFill(0, (void *)(VRAM), VRAM_SIZE);
+        CpuFastFill(0, (void*)(VRAM), VRAM_SIZE);
         break;
     case 2:
         LoadBattleTextboxAndBackground();
@@ -73,7 +73,7 @@ static void CB2_ReshowBattleScreenAfterMenu(void)
         break;
     case 4:
         FreeAllSpritePalettes();
-        gReservedSpritePaletteCount = MAX_BATTLERS_COUNT;
+        gReservedSpritePaletteCount = 4;
         break;
     case 5:
         ClearSpritesHealthboxAnimData();
@@ -149,7 +149,7 @@ static void CB2_ReshowBattleScreenAfterMenu(void)
 
             ActionSelectionCreateCursorAt(gActionSelectionCursor[gBattlerInMenuId], 0);
 
-            if (gWirelessCommType != 0 && gReceivedRemoteLinkPlayers)
+            if (gWirelessCommType != 0 && gReceivedRemoteLinkPlayers != 0)
             {
                 LoadWirelessStatusIndicatorSpriteGfx();
                 CreateWirelessStatusIndicatorSprite(0, 0);
@@ -158,25 +158,25 @@ static void CB2_ReshowBattleScreenAfterMenu(void)
         break;
     default:
         SetVBlankCallback(VBlankCB_Battle);
-        ClearBattleBgCntBaseBlocks();
+        sub_80A95F4();
         BeginHardwarePaletteFade(0xFF, 0, 0x10, 0, 1);
         gPaletteFade.bufferTransferDisabled = 0;
         SetMainCallback2(BattleMainCB2);
-        FillAroundBattleWindows();
+        sub_805EF14();
         break;
     }
 
     gBattleScripting.reshowMainState++;
 }
 
-static void ClearBattleBgCntBaseBlocks(void)
+static void sub_80A95F4(void)
 {
-    vBgCnt *regBgcnt1, *regBgcnt2;
+    struct BGCntrlBitfield *regBgcnt1, *regBgcnt2;
 
-    regBgcnt1 = (vBgCnt *)(&REG_BG1CNT);
+    regBgcnt1 = (struct BGCntrlBitfield *)(&REG_BG1CNT);
     regBgcnt1->charBaseBlock = 0;
 
-    regBgcnt2 = (vBgCnt *)(&REG_BG2CNT);
+    regBgcnt2 = (struct BGCntrlBitfield *)(&REG_BG2CNT);
     regBgcnt2->charBaseBlock = 0;
 }
 
@@ -220,11 +220,9 @@ static void CreateBattlerSprite(u8 battler)
         {
             if (GetMonData(&gEnemyParty[gBattlerPartyIndexes[battler]], MON_DATA_HP) == 0)
                 return;
-            if (gBattleScripting.monCaught) // Don't create opponent sprite if it has been caught.
-                return;
 
             SetMultiuseSpriteTemplateToPokemon(GetMonData(&gEnemyParty[gBattlerPartyIndexes[battler]], MON_DATA_SPECIES), GetBattlerPosition(battler));
-            gBattlerSpriteIds[battler] = CreateSprite(&gMultiuseSpriteTemplate, GetBattlerSpriteCoord(battler, BATTLER_COORD_X_2), posY, GetBattlerSpriteSubpriority(battler));
+            gBattlerSpriteIds[battler] = CreateSprite(&gMultiuseSpriteTemplate, GetBattlerSpriteCoord(battler, 2), posY, GetBattlerSpriteSubpriority(battler));
             gSprites[gBattlerSpriteIds[battler]].oam.paletteNum = battler;
             gSprites[gBattlerSpriteIds[battler]].callback = SpriteCallbackDummy;
             gSprites[gBattlerSpriteIds[battler]].data[0] = battler;
@@ -256,11 +254,11 @@ static void CreateBattlerSprite(u8 battler)
         }
         else
         {
-            if (!IsValidForBattle(&gPlayerParty[gBattlerPartyIndexes[battler]]))
+            if (GetMonData(&gPlayerParty[gBattlerPartyIndexes[battler]], MON_DATA_HP) == 0)
                 return;
 
             SetMultiuseSpriteTemplateToPokemon(GetMonData(&gPlayerParty[gBattlerPartyIndexes[battler]], MON_DATA_SPECIES), GetBattlerPosition(battler));
-            gBattlerSpriteIds[battler] = CreateSprite(&gMultiuseSpriteTemplate, GetBattlerSpriteCoord(battler, BATTLER_COORD_X_2), posY, GetBattlerSpriteSubpriority(battler));
+            gBattlerSpriteIds[battler] = CreateSprite(&gMultiuseSpriteTemplate, GetBattlerSpriteCoord(battler, 2), posY, GetBattlerSpriteSubpriority(battler));
             gSprites[gBattlerSpriteIds[battler]].oam.paletteNum = battler;
             gSprites[gBattlerSpriteIds[battler]].callback = SpriteCallbackDummy;
             gSprites[gBattlerSpriteIds[battler]].data[0] = battler;
@@ -311,7 +309,7 @@ static void CreateHealthboxSprite(u8 battler)
         }
         else if (!(gBattleTypeFlags & BATTLE_TYPE_SAFARI))
         {
-            if (!IsValidForBattle(&gPlayerParty[gBattlerPartyIndexes[battler]]))
+            if (GetMonData(&gPlayerParty[gBattlerPartyIndexes[battler]], MON_DATA_HP) == 0)
                 SetHealthboxSpriteInvisible(healthboxSpriteId);
         }
     }

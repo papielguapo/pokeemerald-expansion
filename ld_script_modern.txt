@@ -2,7 +2,6 @@ ENTRY(Start)
 
 gNumMusicPlayers = 4;
 gMaxLines = 0;
-gInitialMainCB2 = CB2_InitCopyrightScreenAfterBootup;
 
 SECTIONS {
     . = 0x2000000;
@@ -18,7 +17,7 @@ SECTIONS {
         gflib/*.o(ewram_data);
 
         . = 0x40000;
-    }
+}
 
     . = 0x3000000;
 
@@ -28,7 +27,6 @@ SECTIONS {
         /* .bss starts at 0x3000000 */
         src/*.o(.bss);
         gflib/*.o(.bss);
-        data/*.o(.bss);
         *libc.a:*.o(.bss*);
         *libnosys.a:*.o(.bss*);
 
@@ -49,12 +47,9 @@ SECTIONS {
     .text :
     ALIGN(4)
     {
-        src/rom_header.o(.text*);
-        src/rom_header_gf.o(.text.*);
-        src/crt0.o(.text);
-        src/main.o(.text);
-        gflib/*.o(.text*);
+        src/crt0.o(.text*);
         src/*.o(.text*);
+        gflib/*.o(.text*);
         asm/*.o(.text*);
     } =0
 
@@ -116,12 +111,18 @@ SECTIONS {
         src/libisagbprn.o(.rodata);
     } =0
 
-    multiboot_data :
+    other_data :
     ALIGN(4)
     {
-        data/multiboot_ereader.o(.rodata);
+        data/unknown_serial_data.o(.rodata);
         data/multiboot_berry_glitch_fix.o(.rodata);
         data/multiboot_pokemon_colosseum.o(.rodata);
+    } =0
+
+    anim_mon_front_pic_data :
+    ALIGN(4)
+    {
+        src/anim_mon_front_pics.o(.rodata);
     } =0
 
     gfx_data :

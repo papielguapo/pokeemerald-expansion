@@ -36,8 +36,8 @@
 #define MAX_MENU_ITEMS 9
 #define MENU_MIDPOINT (MAX_MENU_ITEMS / 2)
 
-#define TILE_HIGHLIGHT_NONE 0x0005 // Tile number for the bg of an unselected menu item
-#define TILE_HIGHLIGHT_BLUE 0x1005 // Tile number for the bg of a selected menu item
+#define TILE_HIGHLIGHT_NONE 0x0005 // Tile number for the bg of an unselected menu item 
+#define TILE_HIGHLIGHT_BLUE 0x1005 // Tile number for the bg of a selected menu item 
 #define TILE_HIGHLIGHT_RED  0x2005 // Tile number for the bg of a menu item to swap
 
 #define TAG_POKEBLOCK_CASE  14800
@@ -95,6 +95,10 @@ enum
     PKBL_GIVE_TO_LADY
 };
 
+
+extern const u16 gUnknown_0860F074[];
+
+// this file's functions
 static void CB2_InitPokeblockMenu(void);
 static bool8 InitPokeblockMenu(void);
 static bool8 LoadPokeblockMenuGfx(void);
@@ -237,7 +241,7 @@ static const struct OamData sOamData_PokeblockCase =
     .y = 0,
     .affineMode = ST_OAM_AFFINE_OFF,
     .objMode = ST_OAM_OBJ_NORMAL,
-    .mosaic = FALSE,
+    .mosaic = 0,
     .bpp = ST_OAM_4BPP,
     .shape = SPRITE_SHAPE(64x64),
     .x = 0,
@@ -260,7 +264,7 @@ static const union AnimCmd *const sSpriteAnimTable_PokeblockCase[] =
     sSpriteAnim_PokeblockCase
 };
 
-static const union AffineAnimCmd sAffineAnim_PokeblockCaseShake[] =
+static const union AffineAnimCmd sSpriteAffineAnim_85B26C8[] =
 {
     AFFINEANIMCMD_FRAME(0, 0, -2,  2),
     AFFINEANIMCMD_FRAME(0, 0,  2,  4),
@@ -269,9 +273,9 @@ static const union AffineAnimCmd sAffineAnim_PokeblockCaseShake[] =
     AFFINEANIMCMD_END
 };
 
-static const union AffineAnimCmd *const sAffineAnims_PokeblockCaseShake[] =
+static const union AffineAnimCmd *const sSpriteAffineAnimTable_85B26F0[] =
 {
-    sAffineAnim_PokeblockCaseShake
+    sSpriteAffineAnim_85B26C8
 };
 
 const struct CompressedSpriteSheet gPokeblockCase_SpriteSheet =
@@ -439,8 +443,8 @@ static const struct ListMenuTemplate sPokeblockListMenuTemplate =
     .lettersSpacing = 0,
     .itemVerticalPadding = 0,
     .scrollMultiple = LIST_MULTIPLE_SCROLL_DPAD,
-    .fontId = FONT_NORMAL,
-    .cursorKind = CURSOR_INVISIBLE
+    .fontId = 1,
+    .cursorKind = 1
 };
 
 void OpenPokeblockCase(u8 caseId, void (*callback)(void))
@@ -505,11 +509,11 @@ static void CB2_InitPokeblockMenu(void)
 {
     while (1)
     {
-        if (MenuHelpers_ShouldWaitForLinkRecv() == TRUE)
+        if (MenuHelpers_CallLinkSomething() == TRUE)
             break;
         if (InitPokeblockMenu() == TRUE)
             break;
-        if (MenuHelpers_IsLinkActive() == TRUE)
+        if (MenuHelpers_LinkSomething() == TRUE)
             break;
     }
 }
@@ -653,7 +657,7 @@ static bool8 LoadPokeblockMenuGfx(void)
         }
         break;
     case 2:
-        LoadCompressedPalette(gMenuPokeblock_Pal, BG_PLTT_ID(0), 6 * PLTT_SIZE_4BPP);
+        LoadCompressedPalette(gMenuPokeblock_Pal, 0, 0xC0);
         sPokeblockMenu->gfxState++;
         break;
     case 3:
@@ -679,9 +683,9 @@ static void HandleInitWindows(void)
 
     InitWindows(sWindowTemplates);
     DeactivateAllTextPrinters();
-    LoadUserWindowBorderGfx(0, 1, BG_PLTT_ID(14));
-    LoadMessageBoxGfx(0, 0xA, BG_PLTT_ID(13));
-    LoadPalette(gStandardMenuPalette, BG_PLTT_ID(15), PLTT_SIZE_4BPP);
+    LoadUserWindowBorderGfx(0, 1, 0xE0);
+    LoadMessageBoxGfx(0, 0xA, 0xD0);
+    LoadPalette(gUnknown_0860F074, 0xF0, 0x20);
 
     for (i = 0; i < ARRAY_COUNT(sWindowTemplates) - 1; i++)
         FillWindowPixelBuffer(i, PIXEL_FILL(0));
@@ -692,7 +696,7 @@ static void HandleInitWindows(void)
 
 static void PrintOnPokeblockWindow(u8 windowId, const u8 *string, s32 x)
 {
-    AddTextPrinterParameterized4(windowId, FONT_NORMAL, x, 1, 0, 0, sTextColor, 0, string);
+    AddTextPrinterParameterized4(windowId, 1, x, 1, 0, 0, sTextColor, 0, string);
 }
 
 static void DrawPokeblockMenuTitleText(void)
@@ -700,7 +704,7 @@ static void DrawPokeblockMenuTitleText(void)
     u8 i;
 
     const u8 *itemName = ItemId_GetName(ITEM_POKEBLOCK_CASE);
-    PrintOnPokeblockWindow(WIN_TITLE, itemName, GetStringCenterAlignXOffset(FONT_NORMAL, itemName, 0x48));
+    PrintOnPokeblockWindow(WIN_TITLE, itemName, GetStringCenterAlignXOffset(1, itemName, 0x48));
 
     PrintOnPokeblockWindow(WIN_SPICY,  gText_Spicy, 0);
     PrintOnPokeblockWindow(WIN_DRY,    gText_Dry, 0);
@@ -728,7 +732,7 @@ static void UpdatePokeblockList(void)
     sPokeblockMenu->items[i].id = LIST_CANCEL;
 
     gMultiuseListMenuTemplate = sPokeblockListMenuTemplate;
-    gMultiuseListMenuTemplate.fontId = FONT_NARROW;
+    gMultiuseListMenuTemplate.fontId = 7;
     gMultiuseListMenuTemplate.totalItems = sPokeblockMenu->itemsNo;
     gMultiuseListMenuTemplate.items = sPokeblockMenu->items;
     gMultiuseListMenuTemplate.maxShowed = sPokeblockMenu->maxShowed;
@@ -765,7 +769,7 @@ static void DrawPokeblockInfo(s32 pkblId)
     struct Pokeblock *pokeblock;
     u16 rectTilemapSrc[2];
 
-    FillWindowPixelBuffer(WIN_FEEL, PIXEL_FILL(0));
+    FillWindowPixelBuffer(7, PIXEL_FILL(0));
 
     if (pkblId != LIST_CANCEL)
     {
@@ -788,7 +792,7 @@ static void DrawPokeblockInfo(s32 pkblId)
             }
             CopyToBgTilemapBufferRect(2, rectTilemapSrc, (i / 3 * 6) + 1, (i % 3 * 2) + 13, 1, 2);
         }
-
+        
         // Print the Pokéblock's feel
         ConvertIntToDecimalStringN(gStringVar1, GetPokeblocksFeel(pokeblock), STR_CONV_MODE_RIGHT_ALIGN, 2);
         PrintOnPokeblockWindow(WIN_FEEL, gStringVar1, 4);
@@ -802,7 +806,7 @@ static void DrawPokeblockInfo(s32 pkblId)
         for (i = 0; i < FLAVOR_COUNT; i++)
             CopyToBgTilemapBufferRect(2, rectTilemapSrc, (i / 3 * 6) + 1, (i % 3 * 2) + 13, 1, 2);
 
-        CopyWindowToVram(WIN_FEEL, COPYWIN_GFX);
+        CopyWindowToVram(7, 2);
     }
 
     ScheduleBgCopyTilemapToVram(0);
@@ -951,7 +955,7 @@ static void SpriteCB_ShakePokeblockCase(struct Sprite *sprite)
     {
     case 0:
         sprite->oam.affineMode = ST_OAM_AFFINE_NORMAL;
-        sprite->affineAnims = sAffineAnims_PokeblockCaseShake;
+        sprite->affineAnims = sSpriteAffineAnimTable_85B26F0;
         InitSpriteAffineAnim(sprite);
         sprite->sState = 1;
         sprite->sTimer = 0;
@@ -1004,7 +1008,7 @@ static void Task_HandlePokeblockMenuInput(u8 taskId)
 {
     s16 *data = gTasks[taskId].data;
 
-    if (!gPaletteFade.active && MenuHelpers_ShouldWaitForLinkRecv() != TRUE)
+    if (!gPaletteFade.active && MenuHelpers_CallLinkSomething() != TRUE)
     {
         if (JOY_NEW(SELECT_BUTTON))
         {
@@ -1057,7 +1061,7 @@ static void Task_HandlePokeblocksSwapInput(u8 taskId)
 {
     s16 *data = gTasks[taskId].data;
 
-    if (MenuHelpers_ShouldWaitForLinkRecv() == TRUE)
+    if (MenuHelpers_CallLinkSomething() == TRUE)
         return;
 
     if (JOY_NEW(SELECT_BUTTON))
@@ -1148,9 +1152,9 @@ static void ShowPokeblockActionsWindow(u8 taskId)
         tWindowId = WIN_ACTIONS;
 
     DestroyScrollArrows();
-    DrawStdFrameWithCustomTileAndPalette(tWindowId, FALSE, 1, 0xE);
-    PrintMenuActionTextsInUpperLeftCorner(tWindowId, sPokeblockMenu->numActions, sPokeblockMenuActions, sPokeblockMenu->pokeblockActionIds);
-    InitMenuInUpperLeftCornerNormal(tWindowId, sPokeblockMenu->numActions, 0);
+    DrawStdFrameWithCustomTileAndPalette(tWindowId, 0, 1, 0xE);
+    sub_81995E4(tWindowId, sPokeblockMenu->numActions, sPokeblockMenuActions, sPokeblockMenu->pokeblockActionIds);
+    InitMenuInUpperLeftCornerPlaySoundWhenAPressed(tWindowId, sPokeblockMenu->numActions, 0);
     PutWindowTilemap(tWindowId);
     ScheduleBgCopyTilemapToVram(1);
 
@@ -1161,7 +1165,7 @@ static void Task_HandlePokeblockActionsInput(u8 taskId)
 {
     s8 itemId;
 
-    if (MenuHelpers_ShouldWaitForLinkRecv() == TRUE)
+    if (MenuHelpers_CallLinkSomething() == TRUE)
         return;
 
     itemId = Menu_ProcessInputNoWrap();
@@ -1204,7 +1208,7 @@ static void PokeblockAction_Toss(u8 taskId)
     ClearStdWindowAndFrameToTransparent(tWindowId, FALSE);
     StringCopy(gStringVar1, gPokeblockNames[gSaveBlock1Ptr->pokeblocks[gSpecialVar_ItemId].color]);
     StringExpandPlaceholders(gStringVar4, gText_ThrowAwayVar1);
-    DisplayMessageAndContinueTask(taskId, WIN_TOSS_MSG, 10, 13, FONT_NORMAL, GetPlayerTextSpeedDelay(), gStringVar4, CreateTossPokeblockYesNoMenu);
+    DisplayMessageAndContinueTask(taskId, WIN_TOSS_MSG, 10, 13, 1, GetPlayerTextSpeedDelay(), gStringVar4, CreateTossPokeblockYesNoMenu);
 }
 
 static void CreateTossPokeblockYesNoMenu(u8 taskId)
@@ -1215,7 +1219,7 @@ static void CreateTossPokeblockYesNoMenu(u8 taskId)
 static void TossedPokeblockMessage(u8 taskId)
 {
     StringExpandPlaceholders(gStringVar4, gText_Var1ThrownAway);
-    DisplayMessageAndContinueTask(taskId, WIN_TOSS_MSG, 10, 13, FONT_NORMAL, GetPlayerTextSpeedDelay(), gStringVar4, TossPokeblock);
+    DisplayMessageAndContinueTask(taskId, WIN_TOSS_MSG, 10, 13, 1, GetPlayerTextSpeedDelay(), gStringVar4, TossPokeblock);
 }
 
 static void TossPokeblock(u8 taskId)
