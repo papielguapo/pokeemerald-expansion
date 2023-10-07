@@ -151,3 +151,5 @@
 	.include "src/debug.o"
 	.include "src/battle_controller_player.o"
 	.include "src/pokedex_plus_hgss.o"
+    .include "src/map_preview.o"
+	.include "src/day_night.o"
